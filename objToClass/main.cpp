@@ -81,14 +81,14 @@ void loadobj(const char* path, mesh& toReturn){
 		if (strcmp(lineHeader, "vn") == 0) {
 			lnormals.resize(lnormals.size()+6);
 			fscanf(obj, "%f %f %f \n", &lnormals[nline].x, &lnormals[nline].y, &lnormals[nline].z);
-            cout << "normals = " << lnormals[line].x << " " << lnormals[line].y << " " << lnormals[line].z << endl;
+            cout << "normals = " << lnormals[nline].x << " " << lnormals[nline].y << " " << lnormals[nline].z << endl;
 			nline++;
 		}
 
 		if (strcmp(lineHeader, "vt") == 0) {
 			luv.resize(luv.size()+4);
 			fscanf(obj, "%f %f \n", &luv[uvline].x, &luv[uvline].y);
-            cout << "uv = " << luv[line].x << " " << luv[line].y << endl;
+            cout << "uv = " << luv[uvline].x << " " << luv[uvline].y << endl;
 			uvline++;
 		}
 
@@ -134,6 +134,22 @@ int main(){
     for(int i = 0; i != Finale.vert.size(); i++){
         myfile << Finale.vert[i].x << "f, " << Finale.vert[i].y << "f, " << Finale.vert[i].z << "f, " << endl;
         cout << Finale.vert[i].x << "f, " << Finale.vert[i].y << "f, " << Finale.vert[i].z << "f, " << endl;
+    }
+    myfile << "};" << endl;
+    cout << "};" << endl;
+	myfile << "float[] normals = {" << endl;
+    cout << "float[] normals = {" << endl;
+    for(int i = 0; i != Finale.vert.size(); i++){
+        myfile << Finale.normals[i].x << "f, " << Finale.normals[i].y << "f, " << Finale.normals[i].z << "f, " << endl;
+        cout << Finale.normals[i].x << "f, " << Finale.normals[i].y << "f, " << Finale.normals[i].z << "f, " << endl;
+    }
+    myfile << "};" << endl;
+    cout << "};" << endl;
+	myfile << "float[] uv = {" << endl;
+    cout << "float[] uv = {" << endl;
+    for(int i = 0; i != Finale.vert.size(); i++){
+        myfile << Finale.uv[i].x << "f, " << Finale.uv[i].y << "f, " <<  endl;
+        cout << Finale.uv[i].x << "f, " << Finale.uv[i].y << "f, " <<  endl;
     }
     myfile << "};" << endl << "}";
     cout << "};" << endl << "}";
