@@ -14,6 +14,10 @@ public class Engine {
     public mat4 yrot = new mat4();
     public boolean touchControls = true;
     public float fov = 110;
+    public void Init(){
+        GLES32.glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+        GLES32.glEnable(GLES32.GL_DEPTH_TEST);
+    }
     public void perFrame(ivec2 resolution){
         GLES32.glClear(GLES32.GL_COLOR_BUFFER_BIT | GLES32.GL_DEPTH_BUFFER_BIT);
         GLES32.glViewport(0, 0, resolution.x, resolution.y);

@@ -15,30 +15,33 @@ import javax.microedition.khronos.opengles.GL10;
 import android.opengl.GLES32;
 import android.view.MotionEvent;
 
+import com.example.openglapp.cube.cube_model;
+import com.example.openglapp.cube.cube_normals;
+import com.example.openglapp.cube.cube_uv;
+
 class render implements GLSurfaceView.Renderer {
 
     Mesh triangle = new Mesh();
 
-    float[] vertices =  {
-            -1, -1, -1,
-            0, 1, -1,
-            1, -1, -1
-    };
-
     private final String vertexShaderCode =
                     "attribute vec3 positions;" +
+                     "attribute vec3 normals;" +
+                     "attribute vec2 uv;" +
                     "uniform mat4 proj;" +
                     "uniform mat4 translate;" +
                     "uniform mat4 xrot;" +
                     "uniform mat4 yrot;" +
+                    "varying vec2 fuv;"+
                     "void main() {" +
                     "  gl_Position = proj * xrot * yrot * translate * vec4(positions, 1.0f);" +
+                            "fuv = uv;"+
                     "}";
 
     private final String fragmentShaderCode =
                     "precision mediump float;" +
+                    "varying vec2 fuv;"+
                     "void main() {" +
-                    "  gl_FragColor = vec4(1.0f, 0.0f, 0.0f, 1.0f);" +
+                    "  gl_FragColor = vec4(fuv, 1.0f, 1.0f);" +
                     "}";
 
     Engine eng = new Engine();
@@ -47,8 +50,10 @@ class render implements GLSurfaceView.Renderer {
 
     @Override
     public void onSurfaceCreated(GL10 gl10, EGLConfig eglConfig) {
-        GLES32.glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-        triangle.vertexes = vertices;
+        eng.Init();
+        triangle.vertexes = new cube_model().verts;
+        triangle.normals = new cube_normals().verts;
+        triangle.uv = new cube_uv().verts;
         triangle.initMesh(fragmentShaderCode, vertexShaderCode);
     }
 
