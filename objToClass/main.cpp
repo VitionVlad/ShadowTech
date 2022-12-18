@@ -127,7 +127,7 @@ int main(){
     myfile.open("model.java");
     myfile << "package com.example.openglapp;" << endl << endl;
     myfile << "public class model {" << endl;
-    myfile << "float[] verts = {" << endl;
+    myfile << "public float[] verts = {" << endl;
     cout << "package com.example.openglapp;" << endl << endl;
     cout << "public class model {" << endl;
     cout << "float[] verts = {" << endl;
@@ -142,7 +142,7 @@ int main(){
    myfile.open("normals.java");\
     myfile << "package com.example.openglapp;" << endl << endl;
     myfile << "public class normals {" << endl;
-    myfile << "float[] verts = {" << endl;
+    myfile << "public float[] verts = {" << endl;
     cout << "package com.example.openglapp;" << endl << endl;
     cout << "public class normals {" << endl;
     cout << "float[] verts = {" << endl;
@@ -157,7 +157,7 @@ int main(){
 	 myfile.open("uv.java");
     myfile << "package com.example.openglapp;" << endl << endl;
     myfile << "public class uv {" << endl;
-    myfile << "float[] verts = {" << endl;
+    myfile << "public float[] verts = {" << endl;
     cout << "package com.example.openglapp;" << endl << endl;
     cout << "public class uv {" << endl;
     cout << "float[] verts = {" << endl;
@@ -168,6 +168,5 @@ int main(){
     myfile << "};" << endl << "}";
     cout << "};" << endl << "}";
 	myfile.close();
-
     return 0;
 }
