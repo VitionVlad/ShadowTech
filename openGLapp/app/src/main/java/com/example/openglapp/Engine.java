@@ -20,7 +20,7 @@ public class Engine {
         if(allowmove == true && touchControls == true){
             if(touchpos.x < resolution.x/2){
                 pos.z +=  (float) Math.cos(rot.y) * Math.cos(rot.x) * ((((-touchpos.y/resolution.y)*2) +1)*0.01);
-                //pos.x -= Math.cos(rot.y) * Math.sin(rot.x) * (((touchpos.x/ (resolution.x))*4) -1)*0.1;
+                pos.x -= Math.cos(rot.y) * Math.sin(rot.x) * ((((-touchpos.y/resolution.y)*2) +1)*0.01);
             }else if(touchpos.x > resolution.x/2){
                 rot.x += (((touchpos.x/ (resolution.x*1.7))*2) -1)*0.1;
                 rot.y += (float) ((((-touchpos.y/resolution.y)*2) +1)*0.01);
