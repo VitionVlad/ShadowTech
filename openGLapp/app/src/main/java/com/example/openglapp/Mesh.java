@@ -2,9 +2,11 @@ package com.example.openglapp;
 
 import android.opengl.GLES32;
 
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
+import java.nio.IntBuffer;
 
 public class Mesh {
     private FloatBuffer vertexbuf;
@@ -13,10 +15,13 @@ public class Mesh {
     public float[] vertexes;
     public float[] normals;
     public float[] uv;
+    public byte[] texture;
+    public ivec2 texResolution;
     private int program;
     private int positionHandle;
     private int normalHandle;
     private int uvHandle;
+    private int[] albedoHandle = new int[1];
 
     public void initMesh(String fshader, String vshader){
         int fshaderprog = GLES32.glCreateShader(GLES32.GL_FRAGMENT_SHADER);
@@ -46,9 +51,26 @@ public class Mesh {
         uvbuf = bb.asFloatBuffer();
         uvbuf.put(uv);
         uvbuf.position(0);
+
+        ByteBuffer buffer = ByteBuffer.allocateDirect(texture.length);
+        buffer.put(texture);
+        buffer.position(0);
+        GLES32.glGenTextures(0, IntBuffer.wrap(albedoHandle));
+        GLES32.glTexImage2D(GLES32.GL_TEXTURE_2D, 0, GLES32.GL_RGBA, texResolution.x ,texResolution.y, 0, GLES32.GL_RGBA, GLES32.GL_UNSIGNED_BYTE, buffer);
+        GLES32.glActiveTexture(GLES32.GL_TEXTURE0);
+
+        GLES32.glTexParameteri(GLES32.GL_TEXTURE_2D, GLES32.GL_TEXTURE_WRAP_S, GLES32.GL_MIRRORED_REPEAT);
+        GLES32.glTexParameteri(GLES32.GL_TEXTURE_2D, GLES32.GL_TEXTURE_WRAP_T, GLES32.GL_MIRRORED_REPEAT);
+        float[] borderColor = { 0.0f, 0.0f, 0.0f, 1.0f };
+        GLES32.glTexParameterfv(GLES32.GL_TEXTURE_2D, GLES32.GL_TEXTURE_BORDER_COLOR, FloatBuffer.wrap(borderColor));
+        GLES32.glTexParameteri(GLES32.GL_TEXTURE_2D, GLES32.GL_TEXTURE_MIN_FILTER, GLES32.GL_NEAREST);
+        GLES32.glTexParameteri(GLES32.GL_TEXTURE_2D, GLES32.GL_TEXTURE_MAG_FILTER, GLES32.GL_LINEAR);
     }
     public void Draw(Engine handle){
         GLES32.glUseProgram(program);
+        GLES32.glUniform1i(GLES32.glGetUniformLocation(program, "tex1"), 0);
+        GLES32.glActiveTexture(GLES32.GL_TEXTURE0);
+        GLES32.glBindTexture(GLES32.GL_TEXTURE_2D, albedoHandle[0]);
 
         positionHandle = GLES32.glGetAttribLocation(program, "positions");
         GLES32.glEnableVertexAttribArray(positionHandle);

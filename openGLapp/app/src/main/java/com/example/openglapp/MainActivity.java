@@ -17,6 +17,7 @@ import android.view.MotionEvent;
 
 import com.example.openglapp.cube.cube_model;
 import com.example.openglapp.cube.cube_normals;
+import com.example.openglapp.cube.cube_texture;
 import com.example.openglapp.cube.cube_uv;
 
 class render implements GLSurfaceView.Renderer {
@@ -32,16 +33,20 @@ class render implements GLSurfaceView.Renderer {
                     "uniform mat4 xrot;" +
                     "uniform mat4 yrot;" +
                     "varying vec2 fuv;"+
+                    "varying vec3 fnormals;"+
                     "void main() {" +
                     "  gl_Position = proj * xrot * yrot * translate * vec4(positions, 1.0f);" +
                             "fuv = uv;"+
+                            "fnormals = normals;"+
                     "}";
 
     private final String fragmentShaderCode =
                     "precision mediump float;" +
+                    "uniform sampler2D tex1;"+
                     "varying vec2 fuv;"+
+                    "varying vec3 fnormals;"+
                     "void main() {" +
-                    "  gl_FragColor = vec4(fuv, 1.0f, 1.0f);" +
+                    "  gl_FragColor = texture2D(tex1, fuv).rgba;" +
                     "}";
 
     Engine eng = new Engine();
@@ -54,6 +59,8 @@ class render implements GLSurfaceView.Renderer {
         triangle.vertexes = new cube_model().verts;
         triangle.normals = new cube_normals().verts;
         triangle.uv = new cube_uv().verts;
+        triangle.texResolution = new ivec2(25, 25);
+        triangle.texture = new cube_texture().pixels;
         triangle.initMesh(fragmentShaderCode, vertexShaderCode);
     }
 
