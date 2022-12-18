@@ -122,11 +122,16 @@ void loadobj(const char* path, mesh& toReturn){
 
 int main(){
     mesh Finale;
-    loadobj("test.obj", Finale);
+    string filename;
+    cout << "enter filename:";
+    cin >> filename;
+    loadobj(filename.c_str(), Finale);
+    cout << "enter class name:";
+    cin >> filename;
     ofstream myfile;
-    myfile.open("model.java");
+    myfile.open(filename+"_model.java");
     myfile << "package com.example.openglapp;" << endl << endl;
-    myfile << "public class model {" << endl;
+    myfile << "public class " << filename << "_model {" << endl;
     myfile << "public float[] verts = {" << endl;
     cout << "package com.example.openglapp;" << endl << endl;
     cout << "public class model {" << endl;
@@ -139,9 +144,9 @@ int main(){
     cout << "};" << endl << "}";
 	myfile.close();
 	//normals
-   myfile.open("normals.java");\
+   myfile.open(filename+"_normals.java");\
     myfile << "package com.example.openglapp;" << endl << endl;
-    myfile << "public class normals {" << endl;
+    myfile << "public class " << filename << "_normals {" << endl;
     myfile << "public float[] verts = {" << endl;
     cout << "package com.example.openglapp;" << endl << endl;
     cout << "public class normals {" << endl;
@@ -154,9 +159,9 @@ int main(){
     cout << "};" << endl << "}";
 	myfile.close();
 	//uv
-	 myfile.open("uv.java");
+	 myfile.open(filename+"_uv.java");
     myfile << "package com.example.openglapp;" << endl << endl;
-    myfile << "public class uv {" << endl;
+    myfile << "public class " << filename << "_uv {" << endl;
     myfile << "public float[] verts = {" << endl;
     cout << "package com.example.openglapp;" << endl << endl;
     cout << "public class uv {" << endl;
