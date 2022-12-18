@@ -124,7 +124,7 @@ int main(){
     mesh Finale;
     loadobj("test.obj", Finale);
     ofstream myfile;
-    myfile.open("class.java");\
+    myfile.open("model.java");
     myfile << "package com.example.openglapp;" << endl << endl;
     myfile << "public class model {" << endl;
     myfile << "float[] verts = {" << endl;
@@ -135,23 +135,39 @@ int main(){
         myfile << Finale.vert[i].x << "f, " << Finale.vert[i].y << "f, " << Finale.vert[i].z << "f, " << endl;
         cout << Finale.vert[i].x << "f, " << Finale.vert[i].y << "f, " << Finale.vert[i].z << "f, " << endl;
     }
-    myfile << "};" << endl;
-    cout << "};" << endl;
-	myfile << "float[] normals = {" << endl;
-    cout << "float[] normals = {" << endl;
+	myfile << "};" << endl << "}";
+    cout << "};" << endl << "}";
+	myfile.close();
+	//normals
+   myfile.open("normals.java");\
+    myfile << "package com.example.openglapp;" << endl << endl;
+    myfile << "public class normals {" << endl;
+    myfile << "float[] verts = {" << endl;
+    cout << "package com.example.openglapp;" << endl << endl;
+    cout << "public class normals {" << endl;
+    cout << "float[] verts = {" << endl;
     for(int i = 0; i != Finale.vert.size(); i++){
         myfile << Finale.normals[i].x << "f, " << Finale.normals[i].y << "f, " << Finale.normals[i].z << "f, " << endl;
         cout << Finale.normals[i].x << "f, " << Finale.normals[i].y << "f, " << Finale.normals[i].z << "f, " << endl;
     }
-    myfile << "};" << endl;
-    cout << "};" << endl;
-	myfile << "float[] uv = {" << endl;
-    cout << "float[] uv = {" << endl;
+    myfile << "};" << endl << "}";
+    cout << "};" << endl << "}";
+	myfile.close();
+	//uv
+	 myfile.open("uv.java");
+    myfile << "package com.example.openglapp;" << endl << endl;
+    myfile << "public class uv {" << endl;
+    myfile << "float[] verts = {" << endl;
+    cout << "package com.example.openglapp;" << endl << endl;
+    cout << "public class uv {" << endl;
+    cout << "float[] verts = {" << endl;
     for(int i = 0; i != Finale.vert.size(); i++){
         myfile << Finale.uv[i].x << "f, " << Finale.uv[i].y << "f, " <<  endl;
         cout << Finale.uv[i].x << "f, " << Finale.uv[i].y << "f, " <<  endl;
     }
     myfile << "};" << endl << "}";
     cout << "};" << endl << "}";
+	myfile.close();
+
     return 0;
 }
