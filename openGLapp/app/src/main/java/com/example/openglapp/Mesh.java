@@ -22,6 +22,8 @@ public class Mesh {
     private int normalHandle;
     private int uvHandle;
     private int[] albedoHandle = new int[1];
+    public vec3 meshPosition = new vec3();
+    private mat4 meshMatrix = new mat4();
 
     public void initMesh(String fshader, String vshader){
         int fshaderprog = GLES32.glCreateShader(GLES32.GL_FRAGMENT_SHADER);
@@ -71,6 +73,7 @@ public class Mesh {
         GLES32.glUniform1i(GLES32.glGetUniformLocation(program, "tex1"), 0);
         GLES32.glActiveTexture(GLES32.GL_TEXTURE0);
         GLES32.glBindTexture(GLES32.GL_TEXTURE_2D, albedoHandle[0]);
+        meshMatrix.buildtranslatemat(meshPosition);
 
         positionHandle = GLES32.glGetAttribLocation(program, "positions");
         GLES32.glEnableVertexAttribArray(positionHandle);
@@ -88,6 +91,7 @@ public class Mesh {
         GLES32.glUniformMatrix4fv(GLES32.glGetUniformLocation(program, "translate"), 1, false, handle.translate.mat,  0);
         GLES32.glUniformMatrix4fv(GLES32.glGetUniformLocation(program, "xrot"), 1, false, handle.xrot.mat,  0);
         GLES32.glUniformMatrix4fv(GLES32.glGetUniformLocation(program, "yrot"), 1, false, handle.yrot.mat,  0);
+        GLES32.glUniformMatrix4fv(GLES32.glGetUniformLocation(program, "meshm"), 1, false, meshMatrix.mat,  0);
 
         GLES32.glDrawArrays(GLES32.GL_TRIANGLES, 0, vertexes.length/3);
         GLES32.glDisableVertexAttribArray(positionHandle);

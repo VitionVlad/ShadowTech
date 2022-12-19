@@ -32,10 +32,11 @@ class render implements GLSurfaceView.Renderer {
                     "uniform mat4 translate;" +
                     "uniform mat4 xrot;" +
                     "uniform mat4 yrot;" +
+                    "uniform mat4 meshm;" +
                     "varying vec2 fuv;"+
                     "varying vec3 fnormals;"+
                     "void main() {" +
-                    "  gl_Position = proj * xrot * yrot * translate * vec4(positions, 1.0f);" +
+                    "  gl_Position = proj * xrot * yrot * translate * meshm * vec4(positions, 1.0f);" +
                             "fuv = uv;"+
                             "fnormals = normals;"+
                     "}";
@@ -59,8 +60,9 @@ class render implements GLSurfaceView.Renderer {
         triangle.vertexes = new cube_model().verts;
         triangle.normals = new cube_normals().verts;
         triangle.uv = new cube_uv().verts;
-        triangle.texResolution = new ivec2(25, 25);
+        triangle.texResolution = new cube_texture().res;
         triangle.texture = new cube_texture().pixels;
+        triangle.meshPosition.z = -1.5f;
         triangle.initMesh(fragmentShaderCode, vertexShaderCode);
     }
 
