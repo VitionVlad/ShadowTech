@@ -40,6 +40,7 @@ int main(){
     myfile.open(name+"_texture.java");
     myfile << "package com.example.openglapp;" << endl << endl;
     myfile << "public class " << name << "_texture {" << endl;
+    myfile << "public ivec2 res = new ivec2(" << resolutionx << ", " << resolutiony << ");" << endl;
     myfile << "public byte[] pixels = {" << endl;
     cout << "package com.example.openglapp;" << endl << endl;
     cout << "public class model {" << endl;
