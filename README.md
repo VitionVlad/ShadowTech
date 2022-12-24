@@ -9,3 +9,5 @@ new render features! render to texture, texture mapping, shadow maps and deffere
 same scene, but one with normal colors, another with inversed
 # objtoClass  
 this is a simple tool to convert obj file to java file, ready for use, works really simple.
+# ppmtoClass  
+same thing as objtoclass but for ppm images
