@@ -66,13 +66,18 @@ class render implements GLSurfaceView.Renderer {
     @Override
     public void onSurfaceCreated(GL10 gl10, EGLConfig eglConfig) {
         eng.Init();
+        eng.shadowProj.buildperspectivemat(90, 0.1f, 100, 1);
+        eng.shadowTrans.buildtranslatemat(new vec3(0, 0, -1f));
+        eng.shadowxrot.buildxrotmat(-0.2f);
+        eng.shadowyrot.buildyrotmat(0);
+
         triangle.vertexes = new cube_model().verts;
         triangle.normals = new cube_normals().verts;
         triangle.uv = new cube_uv().verts;
         triangle.texResolution = new cube_texture().res;
         triangle.texture = new cube_texture().pixels;
         triangle.meshPosition.z = -1.5f;
-        triangle.initMesh(fragmentShaderCode, vertexShaderCode);
+        triangle.initMesh(fragmentShaderCode, vertexShaderCode, eng);
 
         plane.vertexes = new plane_model().verts;
         plane.normals = new plane_normals().verts;
@@ -80,7 +85,7 @@ class render implements GLSurfaceView.Renderer {
         plane.texResolution = new cube_texture().res;
         plane.texture = new cube_texture().pixels;
         plane.meshPosition.y = -0.5f;
-        plane.initMesh(fragmentShaderCode, vertexShaderCode);
+        plane.initMesh(fragmentShaderCode, vertexShaderCode, eng);
     }
 
     @Override
@@ -91,9 +96,16 @@ class render implements GLSurfaceView.Renderer {
 
     @Override
     public void onDrawFrame(GL10 gl10) {
-        eng.beginFrame(screenres);
+        eng.beginShadowPass();
+
         triangle.Draw(eng);
         plane.Draw(eng);
+
+        eng.beginMainPass(screenres);
+
+        triangle.Draw(eng);
+        plane.Draw(eng);
+
         eng.endFrame(screenres);
     }
 }

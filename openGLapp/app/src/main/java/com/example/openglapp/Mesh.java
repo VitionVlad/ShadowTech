@@ -9,7 +9,7 @@ import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 
 public class Mesh {
-    private FloatBuffer vertexbuf;
+    public FloatBuffer vertexbuf;
     private FloatBuffer normalbuf;
     private FloatBuffer uvbuf;
     public float[] vertexes;
@@ -25,7 +25,7 @@ public class Mesh {
     public vec3 meshPosition = new vec3();
     private mat4 meshMatrix = new mat4();
 
-    public void initMesh(String fshader, String vshader){
+    public void initMesh(String fshader, String vshader, Engine handle){
         int fshaderprog = GLES32.glCreateShader(GLES32.GL_FRAGMENT_SHADER);
         int vshaderprog = GLES32.glCreateShader(GLES32.GL_VERTEX_SHADER);
         GLES32.glShaderSource(fshaderprog, fshader);
@@ -69,11 +69,18 @@ public class Mesh {
         GLES32.glTexParameteri(GLES32.GL_TEXTURE_2D, GLES32.GL_TEXTURE_MAG_FILTER, GLES32.GL_LINEAR);
     }
     public void Draw(Engine handle){
-        GLES32.glUseProgram(program);
+        if(handle.shadowpass == false){
+            GLES32.glUseProgram(program);
+        }
 
-        GLES32.glUniform1i(GLES32.glGetUniformLocation(program, "tex1"), 0);
         GLES32.glActiveTexture(GLES32.GL_TEXTURE0);
         GLES32.glBindTexture(GLES32.GL_TEXTURE_2D, albedoHandle[0]);
+        GLES32.glUniform1i(GLES32.glGetUniformLocation(program, "tex1"), 0);
+
+        GLES32.glActiveTexture(GLES32.GL_TEXTURE10);
+        GLES32.glBindTexture(GLES32.GL_TEXTURE_2D, handle.shadowimg[0]);
+        GLES32.glUniform1i(GLES32.glGetUniformLocation(program, "shadowMap"), 10);
+
         meshMatrix.buildtranslatemat(meshPosition);
 
         positionHandle = GLES32.glGetAttribLocation(program, "positions");
@@ -88,11 +95,19 @@ public class Mesh {
         GLES32.glEnableVertexAttribArray(uvHandle);
         GLES32.glVertexAttribPointer(uvHandle, 2, GLES32.GL_FLOAT, false, 0, uvbuf);
 
-        GLES32.glUniformMatrix4fv(GLES32.glGetUniformLocation(program, "proj"), 1, false, handle.perspective.mat,  0);
-        GLES32.glUniformMatrix4fv(GLES32.glGetUniformLocation(program, "translate"), 1, false, handle.translate.mat,  0);
-        GLES32.glUniformMatrix4fv(GLES32.glGetUniformLocation(program, "xrot"), 1, false, handle.xrot.mat,  0);
-        GLES32.glUniformMatrix4fv(GLES32.glGetUniformLocation(program, "yrot"), 1, false, handle.yrot.mat,  0);
-        GLES32.glUniformMatrix4fv(GLES32.glGetUniformLocation(program, "meshm"), 1, false, meshMatrix.mat,  0);
+        if(handle.shadowpass == true){
+            GLES32.glUniformMatrix4fv(GLES32.glGetUniformLocation(program, "proj"), 1, false, handle.shadowProj.mat,  0);
+            GLES32.glUniformMatrix4fv(GLES32.glGetUniformLocation(program, "translate"), 1, false, handle.shadowTrans.mat,  0);
+            GLES32.glUniformMatrix4fv(GLES32.glGetUniformLocation(program, "xrot"), 1, false, handle.shadowxrot.mat,  0);
+            GLES32.glUniformMatrix4fv(GLES32.glGetUniformLocation(program, "yrot"), 1, false, handle.shadowyrot.mat,  0);
+            GLES32.glUniformMatrix4fv(GLES32.glGetUniformLocation(program, "meshm"), 1, false, meshMatrix.mat,  0);
+        }else{
+            GLES32.glUniformMatrix4fv(GLES32.glGetUniformLocation(program, "proj"), 1, false, handle.perspective.mat,  0);
+            GLES32.glUniformMatrix4fv(GLES32.glGetUniformLocation(program, "translate"), 1, false, handle.translate.mat,  0);
+            GLES32.glUniformMatrix4fv(GLES32.glGetUniformLocation(program, "xrot"), 1, false, handle.xrot.mat,  0);
+            GLES32.glUniformMatrix4fv(GLES32.glGetUniformLocation(program, "yrot"), 1, false, handle.yrot.mat,  0);
+            GLES32.glUniformMatrix4fv(GLES32.glGetUniformLocation(program, "meshm"), 1, false, meshMatrix.mat,  0);
+        }
 
         GLES32.glDrawArrays(GLES32.GL_TRIANGLES, 0, vertexes.length/3);
         GLES32.glDisableVertexAttribArray(positionHandle);

@@ -18,17 +18,37 @@ public class Engine {
             1, 1, 0,
             1, -1, 0
     };
-    private final String vshader =
+
+    private final String shadowVertex =
+                    "#version 320 es\n" +
+                    "in vec3 positions;" +
+                    "uniform mat4 proj;" +
+                    "uniform mat4 translate;" +
+                    "uniform mat4 xrot;" +
+                    "uniform mat4 yrot;" +
+                    "uniform mat4 meshm;" +
+                    "void main() {" +
+                    "  gl_Position = proj * xrot * yrot * meshm * translate * vec4(positions, 1.0f);" +
+                    "}";
+
+    private final String shadowFragment =
+                    "#version 320 es\n" +
+                    "precision mediump float;" +
+                    "void main() {" +
+                    "}";
+
+    public String vshader =
                     "#version 320 es\n" +
                     "in vec3 positions;" +
                     "void main() {" +
                     "  gl_Position = vec4(positions, 1.0f);" +
                     "}";
 
-    private final String fshader =
+    public String fshader =
                     "#version 320 es\n" +
                     "precision mediump float;" +
                     "uniform sampler2D tex1;"+
+                    "uniform sampler2D dtex1;"+
                     "uniform vec2 scrres;"+
                     "out vec4 color;" +
                     "void main() {" +
@@ -47,9 +67,20 @@ public class Engine {
     public boolean touchControls = true;
     public float fov = 110;
     private int program;
-    private FloatBuffer vertexbuf;
-    private int positionHandle;
 
+    public int[] sFrm = new int[1];
+    private int sprogram;
+    public int[] shadowimg = new int[1];
+    public int shadowMapResolution = 1000;
+    private FloatBuffer vertexbuf;
+    public boolean shadowpass = false;
+
+    public mat4 shadowProj = new mat4();
+    public mat4 shadowTrans = new mat4();
+    public mat4 shadowxrot = new mat4();
+    public mat4 shadowyrot = new mat4();
+
+    private int positionHandle;
     public int[] frstpassfrm = new int[1];
     public int[] frstpasstex = new int[1];
     public int[] frstpassdtex = new int[1];
@@ -79,6 +110,24 @@ public class Engine {
         GLES32.glDrawBuffers(1, IntBuffer.wrap(frdrw));
         GLES32.glBindFramebuffer(GLES32.GL_FRAMEBUFFER, 0);
     }
+    private void setupShadowMapping(){
+        GLES32.glBindFramebuffer(GLES32.GL_FRAMEBUFFER, sFrm[0]);
+        GLES32.glEnable(GLES32.GL_DEPTH_TEST);
+
+        GLES32.glBindTexture(GLES32.GL_TEXTURE_2D, shadowimg[0]);
+        GLES32.glTexImage2D(GLES32.GL_TEXTURE_2D, 0, GLES32.GL_DEPTH_COMPONENT32F, shadowMapResolution, shadowMapResolution, 0, GLES32.GL_DEPTH_COMPONENT, GLES32.GL_FLOAT, null);
+        GLES32.glTexParameteri(GLES32.GL_TEXTURE_2D, GLES32.GL_TEXTURE_MIN_FILTER, GLES32.GL_NEAREST);
+        GLES32.glTexParameteri(GLES32.GL_TEXTURE_2D, GLES32.GL_TEXTURE_MAG_FILTER, GLES32.GL_NEAREST);
+        GLES32.glTexParameteri(GLES32.GL_TEXTURE_2D, GLES32.GL_TEXTURE_COMPARE_MODE, GLES32.GL_COMPARE_REF_TO_TEXTURE);
+        GLES32.glTexParameteri(GLES32.GL_TEXTURE_2D, GLES32.GL_TEXTURE_COMPARE_FUNC, GLES32.GL_LEQUAL);
+        GLES32.glBindTexture(GLES32.GL_TEXTURE_2D, 0);
+
+        GLES32.glFramebufferTexture(GLES32.GL_FRAMEBUFFER, GLES32.GL_DEPTH_ATTACHMENT, shadowimg[0], 0);
+
+        int[] frdrw = {0};
+        GLES32.glDrawBuffers(1, IntBuffer.wrap(frdrw));
+        GLES32.glBindFramebuffer(GLES32.GL_FRAMEBUFFER, 0);
+    }
     public void Init(){
         GLES32.glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         GLES32.glEnable(GLES32.GL_DEPTH_TEST);
@@ -93,6 +142,18 @@ public class Engine {
         GLES32.glAttachShader(program, fshaderprog);
         GLES32.glAttachShader(program, vshaderprog);
         GLES32.glLinkProgram(program);
+
+        fshaderprog = GLES32.glCreateShader(GLES32.GL_FRAGMENT_SHADER);
+        vshaderprog = GLES32.glCreateShader(GLES32.GL_VERTEX_SHADER);
+        GLES32.glShaderSource(fshaderprog, shadowFragment);
+        GLES32.glShaderSource(vshaderprog, shadowVertex);
+        GLES32.glCompileShader(fshaderprog);
+        GLES32.glCompileShader(vshaderprog);
+        sprogram = GLES32.glCreateProgram();
+        GLES32.glAttachShader(sprogram, fshaderprog);
+        GLES32.glAttachShader(sprogram, vshaderprog);
+        GLES32.glLinkProgram(sprogram);
+
         ByteBuffer bb = ByteBuffer.allocateDirect(scrsurf.length * 4);
         bb.order(ByteOrder.nativeOrder());
         vertexbuf = bb.asFloatBuffer();
@@ -102,10 +163,23 @@ public class Engine {
         GLES32.glGenFramebuffers(1, frstpassfrm, 0);
         GLES32.glGenTextures(1, frstpasstex, 0);
         GLES32.glGenTextures(1, frstpassdtex, 0);
-
         setupRPass();
+
+        GLES32.glGenFramebuffers(1, sFrm, 0);
+        GLES32.glGenTextures(1, shadowimg, 0);
+
+        setupShadowMapping();
     }
-    public void beginFrame(ivec2 resolution){
+    public void beginShadowPass(){
+        //shadowProj.buildperspectivemat(sFov, 0.1f, 100, 1);
+        shadowpass = true;
+        GLES32.glBindFramebuffer(GLES32.GL_FRAMEBUFFER, sFrm[0]);
+        GLES32.glClear(GLES32.GL_COLOR_BUFFER_BIT | GLES32.GL_DEPTH_BUFFER_BIT);
+        GLES32.glViewport(0, 0, shadowMapResolution, shadowMapResolution);
+        GLES32.glUseProgram(sprogram);
+    }
+    public void beginMainPass(ivec2 resolution){
+        shadowpass = false;
         passRes = resolution;
         setupRPass();
         GLES32.glBindFramebuffer(GLES32.GL_FRAMEBUFFER, frstpassfrm[0]);
@@ -132,9 +206,14 @@ public class Engine {
         GLES32.glViewport(0, 0, resolution.x, resolution.y);
         GLES32.glUseProgram(program);
 
-        GLES32.glUniform1i(GLES32.glGetUniformLocation(program, "tex1"), 0);
         GLES32.glActiveTexture(GLES32.GL_TEXTURE0);
         GLES32.glBindTexture(GLES32.GL_TEXTURE_2D, frstpasstex[0]);
+        GLES32.glUniform1i(GLES32.glGetUniformLocation(program, "tex1"), 0);
+
+        GLES32.glActiveTexture(GLES32.GL_TEXTURE1);
+        GLES32.glBindTexture(GLES32.GL_TEXTURE_2D, frstpassdtex[0]);
+        GLES32.glUniform1i(GLES32.glGetUniformLocation(program, "dtex1"), 1);
+
         GLES32.glUniform2f(GLES32.glGetUniformLocation(program, "scrres"), passRes.x, passRes.y);
 
         positionHandle = GLES32.glGetAttribLocation(program, "positions");
