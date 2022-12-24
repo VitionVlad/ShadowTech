@@ -70,6 +70,7 @@ public class Mesh {
     }
     public void Draw(Engine handle){
         GLES32.glUseProgram(program);
+
         GLES32.glUniform1i(GLES32.glGetUniformLocation(program, "tex1"), 0);
         GLES32.glActiveTexture(GLES32.GL_TEXTURE0);
         GLES32.glBindTexture(GLES32.GL_TEXTURE_2D, albedoHandle[0]);
@@ -97,5 +98,6 @@ public class Mesh {
         GLES32.glDisableVertexAttribArray(positionHandle);
         GLES32.glDisableVertexAttribArray(normalHandle);
         GLES32.glDisableVertexAttribArray(uvHandle);
+        GLES32.glBindTexture(GLES32.GL_TEXTURE_2D, 0);
     }
 }

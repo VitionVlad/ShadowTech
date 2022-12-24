@@ -20,21 +20,28 @@ import com.example.openglapp.cube.cube_normals;
 import com.example.openglapp.cube.cube_texture;
 import com.example.openglapp.cube.cube_uv;
 
+import com.example.openglapp.plane.plane_model;
+import com.example.openglapp.plane.plane_normals;
+import com.example.openglapp.plane.plane_uv;
+
 class render implements GLSurfaceView.Renderer {
 
     Mesh triangle = new Mesh();
 
+    Mesh plane = new Mesh();
+
     private final String vertexShaderCode =
-                    "attribute vec3 positions;" +
-                     "attribute vec3 normals;" +
-                     "attribute vec2 uv;" +
+                    "#version 320 es\n" +
+                    "in vec3 positions;" +
+                    "in vec3 normals;" +
+                    "in vec2 uv;" +
                     "uniform mat4 proj;" +
                     "uniform mat4 translate;" +
                     "uniform mat4 xrot;" +
                     "uniform mat4 yrot;" +
                     "uniform mat4 meshm;" +
-                    "varying vec2 fuv;"+
-                    "varying vec3 fnormals;"+
+                    "out vec2 fuv;"+
+                    "out vec3 fnormals;"+
                     "void main() {" +
                     "  gl_Position = proj * xrot * yrot * translate * meshm * vec4(positions, 1.0f);" +
                             "fuv = uv;"+
@@ -42,12 +49,14 @@ class render implements GLSurfaceView.Renderer {
                     "}";
 
     private final String fragmentShaderCode =
+                    "#version 320 es\n" +
                     "precision mediump float;" +
                     "uniform sampler2D tex1;"+
-                    "varying vec2 fuv;"+
-                    "varying vec3 fnormals;"+
+                    "in vec2 fuv;"+
+                    "in vec3 fnormals;"+
+                    "layout(location = 0) out vec4 color;"+
                     "void main() {" +
-                    "  gl_FragColor = texture2D(tex1, fuv).rgba;" +
+                    "  color = vec4(texture(tex1, fuv).rgb, 1.0);" +
                     "}";
 
     Engine eng = new Engine();
@@ -64,6 +73,14 @@ class render implements GLSurfaceView.Renderer {
         triangle.texture = new cube_texture().pixels;
         triangle.meshPosition.z = -1.5f;
         triangle.initMesh(fragmentShaderCode, vertexShaderCode);
+
+        plane.vertexes = new plane_model().verts;
+        plane.normals = new plane_normals().verts;
+        plane.uv = new plane_uv().verts;
+        plane.texResolution = new cube_texture().res;
+        plane.texture = new cube_texture().pixels;
+        plane.meshPosition.y = -0.5f;
+        plane.initMesh(fragmentShaderCode, vertexShaderCode);
     }
 
     @Override
@@ -74,8 +91,10 @@ class render implements GLSurfaceView.Renderer {
 
     @Override
     public void onDrawFrame(GL10 gl10) {
-        eng.perFrame(screenres);
+        eng.beginFrame(screenres);
         triangle.Draw(eng);
+        plane.Draw(eng);
+        eng.endFrame(screenres);
     }
 }
 
