@@ -1,7 +1,7 @@
 # ShadowTech
 simple game engine
 currently renders only a single triangle, but on android you can alredy fly around that triangle!  
-teset on mi 11 lite, with pixelos, android 13 tiramisu, works fine!(rendering one single red triangle is quite simple)  
+teset on mi 11 lite, with pixelos, android 13 tiramisu, works fine! 
 but i will ad new features to this engine, main idea, is to port then this to pc, rewrite in c++. it uses opengl es 3.2, that is the last version i saw  
 new render features! render to texture, texture mapping, shadow maps. Deffered rendering in plan!
 ![Screenshot_20221225-182209_openGLapp](https://user-images.githubusercontent.com/48290199/209475396-27238d46-f6f9-4fd1-9f08-171b0f7dcee9.png)
