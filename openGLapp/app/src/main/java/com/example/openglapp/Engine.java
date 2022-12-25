@@ -23,17 +23,30 @@ public class Engine {
             0, 0, 0, // 10 27
     };
 
-    public boolean[] usedLights = {
-            true,
-            false,
-            false,
-            false,
-            false,
-            false,
-            false,
-            false,
-            false,
-            false
+    public float[] lightColors = {
+            0, 0, 0, // 1 0
+            0, 0, 0, // 2 3
+            0, 0, 0, // 3 6
+            0, 0, 0, // 4 9
+            0, 0, 0, // 5 12
+            0, 0, 0, // 6 15
+            0, 0, 0, // 7 18
+            0, 0, 0, // 8 21
+            0, 0, 0, // 9 24
+            0, 0, 0, // 10 27
+    };
+
+    public int[] usedLights = {
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
     };
 
     private final float[] scrsurf = {
@@ -97,7 +110,7 @@ public class Engine {
     public int[] sFrm = new int[1];
     public int sprogram;
     public int[] shadowimg = new int[1];
-    public int shadowMapResolution = 1000;
+    public int shadowMapResolution = 4000;
     private FloatBuffer vertexbuf;
     public boolean shadowpass = false;
 
@@ -198,7 +211,7 @@ public class Engine {
 
         setupShadowMapping();
     }
-    public void setLight(int n, vec3 position, boolean lightState) {
+    public void setLight(int n, vec3 position, vec3 color, int lightState) {
         int selected = 0;
         switch (n){
             case 1:
@@ -238,6 +251,9 @@ public class Engine {
         lightPositions[selected] = position.x;
         lightPositions[selected+1] = position.y;
         lightPositions[selected+2] = position.z;
+        lightColors[selected] = color.x;
+        lightColors[selected+1] = color.y;
+        lightColors[selected+2] = color.z;
         usedLights[n-1] = lightState;
     }
     public void beginShadowPass(){

@@ -106,6 +106,8 @@ public class Mesh {
 
             GLES32.glUniform3fv(GLES32.glGetUniformLocation(program, "lightsPos"), 10, handle.lightPositions, 0);
 
+            GLES32.glUniform3fv(GLES32.glGetUniformLocation(program, "lightsCol"), 10, handle.lightColors, 0);
+
             GLES32.glUniform3f(GLES32.glGetUniformLocation(program, "viewPos"), handle.pos.x, handle.pos.y, handle.pos.z);
 
 
@@ -128,6 +130,7 @@ public class Mesh {
             GLES32.glUniformMatrix4fv(GLES32.glGetUniformLocation(program, "xrot"), 1, false, handle.xrot.mat,  0);
             GLES32.glUniformMatrix4fv(GLES32.glGetUniformLocation(program, "yrot"), 1, false, handle.yrot.mat,  0);
             GLES32.glUniformMatrix4fv(GLES32.glGetUniformLocation(program, "meshm"), 1, false, meshMatrix.mat,  0);
+            GLES32.glUniform1iv(GLES32.glGetUniformLocation(program, "lightStates"), 10, handle.usedLights, 0);
 
             GLES32.glUniformMatrix4fv(GLES32.glGetUniformLocation(program, "sproj"), 1, false, handle.shadowProj.mat,  0);
             GLES32.glUniformMatrix4fv(GLES32.glGetUniformLocation(program, "stranslate"), 1, false, handle.shadowTrans.mat,  0);

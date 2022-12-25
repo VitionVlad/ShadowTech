@@ -63,6 +63,8 @@ class render implements GLSurfaceView.Renderer {
                     "uniform sampler2D spec1;"+
                     "uniform sampler2D shadowMap;"+
                     "uniform vec3 lightsPos[10];"+
+                    "uniform vec3 lightsCol[10];"+
+                    "uniform int lightStates[10];"+
                     "uniform vec3 viewPos;"+
                     "in vec4 projlightmat;"+
                     "in vec2 fuv;"+
@@ -93,7 +95,13 @@ class render implements GLSurfaceView.Renderer {
                     "  return float(spec + diffuse)*((1.0-shadowMapping()) + ambient);" +
                     "}" +
                     "void main() {" +
-                    "  color = vec4( phongl(lightsPos[0]) * texture(tex1, fuv).rgb, 1.0);" +
+                    "  vec3 toOut;" +
+                            "  for(int i = 0; i!= 10; i++){" +
+                            "  if(lightStates[i]==1){" +
+                            "  toOut += phongl(lightsPos[i]) * lightsCol[i] * texture(tex1, fuv).rgb;" +
+                            "  }" +
+                            "  }" +
+                    "  color = vec4( toOut, 1.0);" +
                     "}";
 
     private final String fragmentShaderCode2 =
@@ -123,7 +131,7 @@ class render implements GLSurfaceView.Renderer {
         eng.shadowTrans.buildtranslatemat(new vec3(0, 0, -1f));
         eng.shadowxrot.buildxrotmat(-0.2f);
         eng.shadowyrot.buildyrotmat(0);
-        eng.setLight(1, new vec3(0, 1, 2f), true);
+        eng.setLight(1, new vec3(0, 1, 2f), new vec3(1, 1, 0.5f), 1);
 
         triangle.vertexes = new cube_model().verts;
         triangle.normals = new cube_normals().verts;
@@ -161,8 +169,6 @@ class render implements GLSurfaceView.Renderer {
 
     @Override
     public void onDrawFrame(GL10 gl10) {
-        triangle.meshPosition.x = -eng.pos.x;
-
         eng.beginShadowPass();
 
         triangle.Draw(eng);
