@@ -12,16 +12,21 @@ public class Mesh {
     public FloatBuffer vertexbuf;
     private FloatBuffer normalbuf;
     private FloatBuffer uvbuf;
+
     public float[] vertexes;
     public float[] normals;
     public float[] uv;
+
     public byte[] texture;
+    public byte[] specular;
     public ivec2 texResolution;
+
     private int program;
     private int positionHandle;
     private int normalHandle;
     private int uvHandle;
     private int[] albedoHandle = new int[1];
+    private int[] specularHandle = new int[1];
     public vec3 meshPosition = new vec3();
     private mat4 meshMatrix = new mat4();
 
@@ -57,16 +62,31 @@ public class Mesh {
         ByteBuffer buffer = ByteBuffer.allocateDirect(texture.length);
         buffer.put(texture);
         buffer.position(0);
-        GLES32.glGenTextures(0, IntBuffer.wrap(albedoHandle));
+        GLES32.glGenTextures(1, albedoHandle, 0);
+        GLES32.glBindTexture(GLES32.GL_TEXTURE_2D, albedoHandle[0]);
         GLES32.glTexImage2D(GLES32.GL_TEXTURE_2D, 0, GLES32.GL_RGBA, texResolution.x ,texResolution.y, 0, GLES32.GL_RGBA, GLES32.GL_UNSIGNED_BYTE, buffer);
         GLES32.glActiveTexture(GLES32.GL_TEXTURE0);
-
         GLES32.glTexParameteri(GLES32.GL_TEXTURE_2D, GLES32.GL_TEXTURE_WRAP_S, GLES32.GL_MIRRORED_REPEAT);
         GLES32.glTexParameteri(GLES32.GL_TEXTURE_2D, GLES32.GL_TEXTURE_WRAP_T, GLES32.GL_MIRRORED_REPEAT);
         float[] borderColor = { 0.0f, 0.0f, 0.0f, 1.0f };
         GLES32.glTexParameterfv(GLES32.GL_TEXTURE_2D, GLES32.GL_TEXTURE_BORDER_COLOR, FloatBuffer.wrap(borderColor));
         GLES32.glTexParameteri(GLES32.GL_TEXTURE_2D, GLES32.GL_TEXTURE_MIN_FILTER, GLES32.GL_NEAREST);
         GLES32.glTexParameteri(GLES32.GL_TEXTURE_2D, GLES32.GL_TEXTURE_MAG_FILTER, GLES32.GL_LINEAR);
+        GLES32.glBindTexture(GLES32.GL_TEXTURE_2D, 0);
+
+        buffer = ByteBuffer.allocateDirect(specular.length);
+        buffer.put(specular);
+        buffer.position(0);
+        GLES32.glGenTextures(1, specularHandle, 0);
+        GLES32.glBindTexture(GLES32.GL_TEXTURE_2D, specularHandle[0]);
+        GLES32.glTexImage2D(GLES32.GL_TEXTURE_2D, 0, GLES32.GL_RGBA, texResolution.x ,texResolution.y, 0, GLES32.GL_RGBA, GLES32.GL_UNSIGNED_BYTE, buffer);
+        GLES32.glActiveTexture(GLES32.GL_TEXTURE1);
+        GLES32.glTexParameteri(GLES32.GL_TEXTURE_2D, GLES32.GL_TEXTURE_WRAP_S, GLES32.GL_MIRRORED_REPEAT);
+        GLES32.glTexParameteri(GLES32.GL_TEXTURE_2D, GLES32.GL_TEXTURE_WRAP_T, GLES32.GL_MIRRORED_REPEAT);
+        GLES32.glTexParameterfv(GLES32.GL_TEXTURE_2D, GLES32.GL_TEXTURE_BORDER_COLOR, FloatBuffer.wrap(borderColor));
+        GLES32.glTexParameteri(GLES32.GL_TEXTURE_2D, GLES32.GL_TEXTURE_MIN_FILTER, GLES32.GL_NEAREST);
+        GLES32.glTexParameteri(GLES32.GL_TEXTURE_2D, GLES32.GL_TEXTURE_MAG_FILTER, GLES32.GL_LINEAR);
+        GLES32.glBindTexture(GLES32.GL_TEXTURE_2D, 0);
     }
     public void Draw(Engine handle){
         if(handle.shadowpass == false){
@@ -75,6 +95,10 @@ public class Mesh {
             GLES32.glActiveTexture(GLES32.GL_TEXTURE0);
             GLES32.glBindTexture(GLES32.GL_TEXTURE_2D, albedoHandle[0]);
             GLES32.glUniform1i(GLES32.glGetUniformLocation(program, "tex1"), 0);
+
+            GLES32.glActiveTexture(GLES32.GL_TEXTURE1);
+            GLES32.glBindTexture(GLES32.GL_TEXTURE_2D, specularHandle[0]);
+            GLES32.glUniform1i(GLES32.glGetUniformLocation(program, "spec1"), 1);
 
             GLES32.glActiveTexture(GLES32.GL_TEXTURE10);
             GLES32.glBindTexture(GLES32.GL_TEXTURE_2D, handle.shadowimg[0]);

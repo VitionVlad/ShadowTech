@@ -49,6 +49,7 @@ class render implements GLSurfaceView.Renderer {
                     "#version 320 es\n" +
                     "precision mediump float;" +
                     "uniform sampler2D tex1;"+
+                    "uniform sampler2D spec1;"+
                     "uniform sampler2D shadowMap;"+
                     "uniform vec3 lightsPos[10];"+
                     "in vec2 fuv;"+
@@ -62,6 +63,7 @@ class render implements GLSurfaceView.Renderer {
             "#version 320 es\n" +
                     "precision mediump float;" +
                     "uniform sampler2D tex1;"+
+                    "uniform sampler2D spec1;"+
                     "uniform sampler2D shadowMap;"+
                     "uniform vec3 lightsPos[10];"+
                     "in vec2 fuv;"+
@@ -88,6 +90,7 @@ class render implements GLSurfaceView.Renderer {
         triangle.uv = new cube_uv().verts;
         triangle.texResolution = new cube_texture().res;
         triangle.texture = new cube_texture().pixels;
+        triangle.specular = new specular_texture().pixels;
         triangle.meshPosition.z = -1.5f;
         triangle.initMesh(fragmentShaderCode, vertexShaderCode, eng);
 
@@ -96,6 +99,7 @@ class render implements GLSurfaceView.Renderer {
         plane.uv = new plane_uv().verts;
         plane.texResolution = new cube_texture().res;
         plane.texture = new cube_texture().pixels;
+        plane.specular = new specular_texture().pixels;
         plane.meshPosition.y = -0.5f;
         plane.initMesh(fragmentShaderCode, vertexShaderCode, eng);
 
@@ -104,6 +108,7 @@ class render implements GLSurfaceView.Renderer {
         monitor.uv = new monitor_uv().verts;
         monitor.texResolution = new cube_texture().res;
         monitor.texture = new cube_texture().pixels;
+        monitor.specular = new specular_texture().pixels;
         monitor.meshPosition = new vec3(-1.5f, 0.5f, 1.5f);
         monitor.initMesh(fragmentShaderCode2, vertexShaderCode, eng);
     }
