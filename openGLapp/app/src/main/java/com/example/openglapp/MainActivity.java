@@ -161,6 +161,8 @@ class render implements GLSurfaceView.Renderer {
 
     @Override
     public void onDrawFrame(GL10 gl10) {
+        triangle.meshPosition.x = -eng.pos.x;
+
         eng.beginShadowPass();
 
         triangle.Draw(eng);
