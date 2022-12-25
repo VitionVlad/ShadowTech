@@ -6,7 +6,7 @@ but i will ad new features to this engine, main idea, is to port then this to pc
 new render features! render to texture, texture mapping, shadow maps. Deffered rendering in plan!
 ![Screenshot_20221225-182209_openGLapp](https://user-images.githubusercontent.com/48290199/209475396-27238d46-f6f9-4fd1-9f08-171b0f7dcee9.png)
 ![Screenshot_20221225-182223_openGLapp](https://user-images.githubusercontent.com/48290199/209475398-bf0ffea3-8e0f-4fca-b89d-6317aef28ce2.png)
-same scene, but one with normal colors, another with inversed
+same scene, i placed a plane, that shows wats in shadowmap depth buffer
 # objtoClass  
 this is a simple tool to convert obj file to java file, ready for use, works really simple.
 # ppmtoClass  
