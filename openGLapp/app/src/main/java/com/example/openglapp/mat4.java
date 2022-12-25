@@ -49,4 +49,13 @@ public class mat4 {
         mat[11] = -1;
         mat[14] = -zFar*zNear/(zFar-zNear);
     }
+    public void buildorthomat(float r, float l, float t, float b, float zNear, float zFar){
+        mat[0] = 2/(r-l);
+        mat[5] = 2/(r-l);
+        mat[10] = -2/(zFar-zNear);
+        mat[15] = 1;
+        mat[3] = (r+r)/(r-l);
+        mat[7] = (t+b)/(t-b);
+        mat[11] = (zFar+zNear)/(zFar-zNear);
+    }
 }

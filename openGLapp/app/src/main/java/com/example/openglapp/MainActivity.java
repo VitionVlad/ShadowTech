@@ -37,12 +37,23 @@ class render implements GLSurfaceView.Renderer {
                     "uniform mat4 xrot;" +
                     "uniform mat4 yrot;" +
                     "uniform mat4 meshm;" +
+
+                    "uniform mat4 sproj;" +
+                    "uniform mat4 stranslate;" +
+                    "uniform mat4 sxrot;" +
+                    "uniform mat4 syrot;" +
+
                     "out vec2 fuv;"+
                     "out vec3 fnormals;"+
+                    "out vec3 fpos;"+
+                    "out vec4 projlightmat;"+
+
                     "void main() {" +
                     "  gl_Position = proj * xrot * yrot * translate * meshm * vec4(positions, 1.0f);" +
                             "fuv = uv;"+
-                            "fnormals = normals;"+
+                            "fnormals = mat3(transpose(inverse(mat4(1.0f)))) * normals;"+
+                            "fpos = vec3(mat4(1.0f) * vec4(positions, 1.0f));"+
+                            "projlightmat = sproj * sxrot * syrot * stranslate * meshm * vec4(positions, 1.0f);"+
                     "}";
 
     private final String fragmentShaderCode =
@@ -52,11 +63,37 @@ class render implements GLSurfaceView.Renderer {
                     "uniform sampler2D spec1;"+
                     "uniform sampler2D shadowMap;"+
                     "uniform vec3 lightsPos[10];"+
+                    "uniform vec3 viewPos;"+
+                    "in vec4 projlightmat;"+
                     "in vec2 fuv;"+
                     "in vec3 fnormals;"+
+                    "in vec3 fpos;"+
                     "layout(location = 0) out vec4 color;"+
+                    "float shadowMapping(){" +
+                    "  vec3 projected = projlightmat.xyz / projlightmat.w;" +
+                    "  float shadow = 0.0f;" +
+                    "  if(projected.z <= 1.0f){" +
+                    "   projected = (projected + 1.0f)/2.0f;" +
+                    "   float closestDepth = texture(shadowMap, projected.xy).r;" +
+                    "   float currentDepth = projected.z;" +
+                    "   if(currentDepth - 0.001 > closestDepth){" +
+                    "       shadow+=1.0f;" +
+                    "   }" +
+                    "  }" +
+                    "  return shadow;" +
+                    "}" +
+                    "float phongl(vec3 lightpos){" +
+                    "  float ambient = 0.2;" +
+                    "  vec3 norm = normalize(fnormals);" +
+                    "  vec3 ldir = normalize(lightpos-fpos);" +
+                    "  float diffuse = max(dot(norm, ldir), 0.0);" +
+                    "  vec3 viewDir = normalize(-viewPos - fpos);" +
+                    "  vec3 halfwayDir = normalize(ldir + viewDir);" +
+                    "  float spec = pow(max(dot(norm, halfwayDir), 0.0), 256.0) * texture(spec1, fuv).r;" +
+                    "  return float(spec + diffuse)*((1.0-shadowMapping()) + ambient);" +
+                    "}" +
                     "void main() {" +
-                    "  color = vec4(texture(tex1, fuv).rgb, 1.0);" +
+                    "  color = vec4( phongl(lightsPos[0]) * texture(tex1, fuv).rgb, 1.0);" +
                     "}";
 
     private final String fragmentShaderCode2 =
@@ -66,11 +103,12 @@ class render implements GLSurfaceView.Renderer {
                     "uniform sampler2D spec1;"+
                     "uniform sampler2D shadowMap;"+
                     "uniform vec3 lightsPos[10];"+
+                    "in vec4 projlightmat;"+
                     "in vec2 fuv;"+
                     "in vec3 fnormals;"+
                     "layout(location = 0) out vec4 color;"+
                     "void main() {" +
-                    "  color = vec4(texture(shadowMap, vec2(-fuv.x, fuv.y)).rrr, 1.0);" +
+                    "  color = vec4(texture(shadowMap, fuv).rrr, 1.0);" +
                     "}";
 
     Engine eng = new Engine();
@@ -81,9 +119,11 @@ class render implements GLSurfaceView.Renderer {
     public void onSurfaceCreated(GL10 gl10, EGLConfig eglConfig) {
         eng.Init();
         eng.shadowProj.buildperspectivemat(90, 0.1f, 100, 1);
+        //eng.shadowProj.buildorthomat(new vec2(5, 5), new vec2(5, 5), 0.1f, 100f);
         eng.shadowTrans.buildtranslatemat(new vec3(0, 0, -1f));
         eng.shadowxrot.buildxrotmat(-0.2f);
         eng.shadowyrot.buildyrotmat(0);
+        eng.setLight(1, new vec3(0, 1, 2f), true);
 
         triangle.vertexes = new cube_model().verts;
         triangle.normals = new cube_normals().verts;

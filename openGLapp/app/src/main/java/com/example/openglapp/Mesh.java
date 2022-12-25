@@ -106,6 +106,9 @@ public class Mesh {
 
             GLES32.glUniform3fv(GLES32.glGetUniformLocation(program, "lightsPos"), 10, handle.lightPositions, 0);
 
+            GLES32.glUniform3f(GLES32.glGetUniformLocation(program, "viewPos"), handle.pos.x, handle.pos.y, handle.pos.z);
+
+
             meshMatrix.buildtranslatemat(meshPosition);
 
             positionHandle = GLES32.glGetAttribLocation(program, "positions");

@@ -146,6 +146,8 @@ public class Engine {
         GLES32.glTexParameteri(GLES32.GL_TEXTURE_2D, GLES32.GL_TEXTURE_MAG_FILTER, GLES32.GL_NEAREST);
         GLES32.glTexParameteri(GLES32.GL_TEXTURE_2D, GLES32.GL_TEXTURE_COMPARE_MODE, GLES32.GL_COMPARE_REF_TO_TEXTURE);
         GLES32.glTexParameteri(GLES32.GL_TEXTURE_2D, GLES32.GL_TEXTURE_COMPARE_FUNC, GLES32.GL_LEQUAL);
+        GLES32.glTexParameteri(GLES32.GL_TEXTURE_2D, GLES32.GL_TEXTURE_WRAP_S, GLES32.GL_CLAMP_TO_BORDER);
+        GLES32.glTexParameteri(GLES32.GL_TEXTURE_2D, GLES32.GL_TEXTURE_WRAP_T, GLES32.GL_CLAMP_TO_BORDER);
         GLES32.glBindTexture(GLES32.GL_TEXTURE_2D, 0);
 
         GLES32.glFramebufferTexture(GLES32.GL_FRAMEBUFFER, GLES32.GL_DEPTH_ATTACHMENT, shadowimg[0], 0);
@@ -196,7 +198,7 @@ public class Engine {
 
         setupShadowMapping();
     }
-    public void setLight(int n, vec3 position, boolean lightState) throws Exception {
+    public void setLight(int n, vec3 position, boolean lightState) {
         int selected = 0;
         switch (n){
             case 1:
@@ -230,7 +232,8 @@ public class Engine {
                 selected = 27;
                 break;
             default:
-                throw new Exception("Engine_failure: no such available light source!");
+                System.out.println("Engine-error: not available such light source!");
+                break;
         }
         lightPositions[selected] = position.x;
         lightPositions[selected+1] = position.y;
