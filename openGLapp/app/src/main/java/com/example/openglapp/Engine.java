@@ -10,6 +10,32 @@ import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 
 public class Engine {
+    public float[] lightPositions = {
+            0, 0, 0, // 1 0
+            0, 0, 0, // 2 3
+            0, 0, 0, // 3 6
+            0, 0, 0, // 4 9
+            0, 0, 0, // 5 12
+            0, 0, 0, // 6 15
+            0, 0, 0, // 7 18
+            0, 0, 0, // 8 21
+            0, 0, 0, // 9 24
+            0, 0, 0, // 10 27
+    };
+
+    public boolean[] usedLights = {
+            true,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+    };
+
     private final float[] scrsurf = {
             -1, -1, 0,
             -1, 1, 0,
@@ -22,13 +48,13 @@ public class Engine {
     private final String shadowVertex =
                     "#version 320 es\n" +
                     "in vec3 positions;" +
-                    "uniform mat4 proj;" +
-                    "uniform mat4 translate;" +
-                    "uniform mat4 xrot;" +
-                    "uniform mat4 yrot;" +
+                    "uniform mat4 sproj;" +
+                    "uniform mat4 stranslate;" +
+                    "uniform mat4 sxrot;" +
+                    "uniform mat4 syrot;" +
                     "uniform mat4 meshm;" +
                     "void main() {" +
-                    "  gl_Position = proj * xrot * yrot * meshm * translate * vec4(positions, 1.0f);" +
+                    "  gl_Position = sproj * sxrot * syrot * meshm * stranslate * vec4(positions, 1.0f);" +
                     "}";
 
     private final String shadowFragment =
@@ -69,7 +95,7 @@ public class Engine {
     private int program;
 
     public int[] sFrm = new int[1];
-    private int sprogram;
+    public int sprogram;
     public int[] shadowimg = new int[1];
     public int shadowMapResolution = 1000;
     private FloatBuffer vertexbuf;
@@ -170,8 +196,48 @@ public class Engine {
 
         setupShadowMapping();
     }
+    public void setLight(int n, vec3 position, boolean lightState) throws Exception {
+        int selected = 0;
+        switch (n){
+            case 1:
+                selected = 0;
+                break;
+            case 2:
+                selected = 3;
+                break;
+            case 3:
+                selected = 6;
+                break;
+            case 4:
+                selected = 9;
+                break;
+            case 5:
+                selected = 12;
+                break;
+            case 6:
+                selected = 15;
+                break;
+            case 7:
+                selected = 18;
+                break;
+            case 8:
+                selected = 21;
+                break;
+            case 9:
+                selected = 24;
+                break;
+            case 10:
+                selected = 27;
+                break;
+            default:
+                throw new Exception("Engine_failure: no such available light source!");
+        }
+        lightPositions[selected] = position.x;
+        lightPositions[selected+1] = position.y;
+        lightPositions[selected+2] = position.z;
+        usedLights[n-1] = lightState;
+    }
     public void beginShadowPass(){
-        //shadowProj.buildperspectivemat(sFov, 0.1f, 100, 1);
         shadowpass = true;
         GLES32.glBindFramebuffer(GLES32.GL_FRAMEBUFFER, sFrm[0]);
         GLES32.glClear(GLES32.GL_COLOR_BUFFER_BIT | GLES32.GL_DEPTH_BUFFER_BIT);

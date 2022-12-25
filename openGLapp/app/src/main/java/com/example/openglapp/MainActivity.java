@@ -7,28 +7,25 @@ import androidx.core.view.WindowInsetsControllerCompat;
 
 import android.content.Context;
 import android.opengl.GLSurfaceView;
-import android.opengl.Matrix;
 import android.os.Bundle;
 
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
-import android.opengl.GLES32;
 import android.view.MotionEvent;
 
-import com.example.openglapp.cube.cube_model;
-import com.example.openglapp.cube.cube_normals;
-import com.example.openglapp.cube.cube_texture;
-import com.example.openglapp.cube.cube_uv;
+import com.example.openglapp.cube.*;
 
-import com.example.openglapp.plane.plane_model;
-import com.example.openglapp.plane.plane_normals;
-import com.example.openglapp.plane.plane_uv;
+import com.example.openglapp.plane.*;
+
+import com.example.openglapp.monitor.*;
 
 class render implements GLSurfaceView.Renderer {
 
     Mesh triangle = new Mesh();
 
     Mesh plane = new Mesh();
+
+    Mesh monitor = new Mesh();
 
     private final String vertexShaderCode =
                     "#version 320 es\n" +
@@ -52,11 +49,26 @@ class render implements GLSurfaceView.Renderer {
                     "#version 320 es\n" +
                     "precision mediump float;" +
                     "uniform sampler2D tex1;"+
+                    "uniform sampler2D shadowMap;"+
+                    "uniform vec3 lightsPos[10];"+
                     "in vec2 fuv;"+
                     "in vec3 fnormals;"+
                     "layout(location = 0) out vec4 color;"+
                     "void main() {" +
                     "  color = vec4(texture(tex1, fuv).rgb, 1.0);" +
+                    "}";
+
+    private final String fragmentShaderCode2 =
+            "#version 320 es\n" +
+                    "precision mediump float;" +
+                    "uniform sampler2D tex1;"+
+                    "uniform sampler2D shadowMap;"+
+                    "uniform vec3 lightsPos[10];"+
+                    "in vec2 fuv;"+
+                    "in vec3 fnormals;"+
+                    "layout(location = 0) out vec4 color;"+
+                    "void main() {" +
+                    "  color = vec4(texture(shadowMap, vec2(-fuv.x, fuv.y)).rrr, 1.0);" +
                     "}";
 
     Engine eng = new Engine();
@@ -86,6 +98,14 @@ class render implements GLSurfaceView.Renderer {
         plane.texture = new cube_texture().pixels;
         plane.meshPosition.y = -0.5f;
         plane.initMesh(fragmentShaderCode, vertexShaderCode, eng);
+
+        monitor.vertexes = new monitor_model().verts;
+        monitor.normals = new monitor_normals().verts;
+        monitor.uv = new monitor_uv().verts;
+        monitor.texResolution = new cube_texture().res;
+        monitor.texture = new cube_texture().pixels;
+        monitor.meshPosition = new vec3(-1.5f, 0.5f, 1.5f);
+        monitor.initMesh(fragmentShaderCode2, vertexShaderCode, eng);
     }
 
     @Override
@@ -100,11 +120,13 @@ class render implements GLSurfaceView.Renderer {
 
         triangle.Draw(eng);
         plane.Draw(eng);
+        monitor.Draw(eng);
 
         eng.beginMainPass(screenres);
 
         triangle.Draw(eng);
         plane.Draw(eng);
+        monitor.Draw(eng);
 
         eng.endFrame(screenres);
     }

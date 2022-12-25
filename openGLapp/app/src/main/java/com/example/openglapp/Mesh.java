@@ -71,42 +71,55 @@ public class Mesh {
     public void Draw(Engine handle){
         if(handle.shadowpass == false){
             GLES32.glUseProgram(program);
-        }
 
-        GLES32.glActiveTexture(GLES32.GL_TEXTURE0);
-        GLES32.glBindTexture(GLES32.GL_TEXTURE_2D, albedoHandle[0]);
-        GLES32.glUniform1i(GLES32.glGetUniformLocation(program, "tex1"), 0);
+            GLES32.glActiveTexture(GLES32.GL_TEXTURE0);
+            GLES32.glBindTexture(GLES32.GL_TEXTURE_2D, albedoHandle[0]);
+            GLES32.glUniform1i(GLES32.glGetUniformLocation(program, "tex1"), 0);
 
-        GLES32.glActiveTexture(GLES32.GL_TEXTURE10);
-        GLES32.glBindTexture(GLES32.GL_TEXTURE_2D, handle.shadowimg[0]);
-        GLES32.glUniform1i(GLES32.glGetUniformLocation(program, "shadowMap"), 10);
+            GLES32.glActiveTexture(GLES32.GL_TEXTURE10);
+            GLES32.glBindTexture(GLES32.GL_TEXTURE_2D, handle.shadowimg[0]);
+            GLES32.glUniform1i(GLES32.glGetUniformLocation(program, "shadowMap"), 10);
 
-        meshMatrix.buildtranslatemat(meshPosition);
+            GLES32.glUniform3fv(GLES32.glGetUniformLocation(program, "lightsPos"), 10, handle.lightPositions, 0);
 
-        positionHandle = GLES32.glGetAttribLocation(program, "positions");
-        GLES32.glEnableVertexAttribArray(positionHandle);
-        GLES32.glVertexAttribPointer(positionHandle, 3, GLES32.GL_FLOAT, false, 0, vertexbuf);
+            meshMatrix.buildtranslatemat(meshPosition);
 
-        normalHandle = GLES32.glGetAttribLocation(program, "normals");
-        GLES32.glEnableVertexAttribArray(normalHandle);
-        GLES32.glVertexAttribPointer(normalHandle, 3, GLES32.GL_FLOAT, false, 0, normalbuf);
+            positionHandle = GLES32.glGetAttribLocation(program, "positions");
+            GLES32.glEnableVertexAttribArray(positionHandle);
+            GLES32.glVertexAttribPointer(positionHandle, 3, GLES32.GL_FLOAT, false, 0, vertexbuf);
 
-        uvHandle = GLES32.glGetAttribLocation(program, "uv");
-        GLES32.glEnableVertexAttribArray(uvHandle);
-        GLES32.glVertexAttribPointer(uvHandle, 2, GLES32.GL_FLOAT, false, 0, uvbuf);
+            normalHandle = GLES32.glGetAttribLocation(program, "normals");
+            GLES32.glEnableVertexAttribArray(normalHandle);
+            GLES32.glVertexAttribPointer(normalHandle, 3, GLES32.GL_FLOAT, false, 0, normalbuf);
 
-        if(handle.shadowpass == true){
-            GLES32.glUniformMatrix4fv(GLES32.glGetUniformLocation(program, "proj"), 1, false, handle.shadowProj.mat,  0);
-            GLES32.glUniformMatrix4fv(GLES32.glGetUniformLocation(program, "translate"), 1, false, handle.shadowTrans.mat,  0);
-            GLES32.glUniformMatrix4fv(GLES32.glGetUniformLocation(program, "xrot"), 1, false, handle.shadowxrot.mat,  0);
-            GLES32.glUniformMatrix4fv(GLES32.glGetUniformLocation(program, "yrot"), 1, false, handle.shadowyrot.mat,  0);
-            GLES32.glUniformMatrix4fv(GLES32.glGetUniformLocation(program, "meshm"), 1, false, meshMatrix.mat,  0);
-        }else{
+            uvHandle = GLES32.glGetAttribLocation(program, "uv");
+            GLES32.glEnableVertexAttribArray(uvHandle);
+            GLES32.glVertexAttribPointer(uvHandle, 2, GLES32.GL_FLOAT, false, 0, uvbuf);
+
             GLES32.glUniformMatrix4fv(GLES32.glGetUniformLocation(program, "proj"), 1, false, handle.perspective.mat,  0);
             GLES32.glUniformMatrix4fv(GLES32.glGetUniformLocation(program, "translate"), 1, false, handle.translate.mat,  0);
             GLES32.glUniformMatrix4fv(GLES32.glGetUniformLocation(program, "xrot"), 1, false, handle.xrot.mat,  0);
             GLES32.glUniformMatrix4fv(GLES32.glGetUniformLocation(program, "yrot"), 1, false, handle.yrot.mat,  0);
             GLES32.glUniformMatrix4fv(GLES32.glGetUniformLocation(program, "meshm"), 1, false, meshMatrix.mat,  0);
+
+            GLES32.glUniformMatrix4fv(GLES32.glGetUniformLocation(program, "sproj"), 1, false, handle.shadowProj.mat,  0);
+            GLES32.glUniformMatrix4fv(GLES32.glGetUniformLocation(program, "stranslate"), 1, false, handle.shadowTrans.mat,  0);
+            GLES32.glUniformMatrix4fv(GLES32.glGetUniformLocation(program, "sxrot"), 1, false, handle.shadowxrot.mat,  0);
+            GLES32.glUniformMatrix4fv(GLES32.glGetUniformLocation(program, "syrot"), 1, false, handle.shadowyrot.mat,  0);
+        }else{
+            meshMatrix.buildtranslatemat(meshPosition);
+
+            positionHandle = GLES32.glGetAttribLocation(handle.sprogram, "positions");
+            GLES32.glEnableVertexAttribArray(positionHandle);
+            GLES32.glVertexAttribPointer(positionHandle, 3, GLES32.GL_FLOAT, false, 0, vertexbuf);
+
+            GLES32.glUniformMatrix4fv(GLES32.glGetUniformLocation(handle.sprogram, "meshm"), 1, false, meshMatrix.mat,  0);
+
+            GLES32.glUniformMatrix4fv(GLES32.glGetUniformLocation(handle.sprogram, "sproj"), 1, false, handle.shadowProj.mat,  0);
+            GLES32.glUniformMatrix4fv(GLES32.glGetUniformLocation(handle.sprogram, "stranslate"), 1, false, handle.shadowTrans.mat,  0);
+            GLES32.glUniformMatrix4fv(GLES32.glGetUniformLocation(handle.sprogram, "sxrot"), 1, false, handle.shadowxrot.mat,  0);
+            GLES32.glUniformMatrix4fv(GLES32.glGetUniformLocation(handle.sprogram, "syrot"), 1, false, handle.shadowyrot.mat,  0);
+
         }
 
         GLES32.glDrawArrays(GLES32.GL_TRIANGLES, 0, vertexes.length/3);
