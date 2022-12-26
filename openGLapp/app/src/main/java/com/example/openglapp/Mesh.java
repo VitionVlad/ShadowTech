@@ -29,7 +29,7 @@ public class Mesh {
     private int[] specularHandle = new int[1];
     public vec3 meshPosition = new vec3();
     private mat4 meshMatrix = new mat4();
-    private vec3 aabb = new vec3();
+    public vec3 aabb = new vec3();
 
     public boolean enablePLayerInteract = true;
 

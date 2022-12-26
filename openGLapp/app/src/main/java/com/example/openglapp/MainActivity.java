@@ -124,6 +124,8 @@ class render implements GLSurfaceView.Renderer {
 
     ivec2 screenres = new ivec2();
 
+    Prop triangleProp = new Prop();
+
     @Override
     public void onSurfaceCreated(GL10 gl10, EGLConfig eglConfig) {
         eng.Init();
@@ -141,6 +143,7 @@ class render implements GLSurfaceView.Renderer {
         triangle.texture = new cube_texture().pixels;
         triangle.specular = new specular_texture().pixels;
         triangle.meshPosition.z = -1.5f;
+        triangle.meshPosition.y = 5;
         triangle.initMesh(fragmentShaderCode, vertexShaderCode, eng);
 
         plane.vertexes = new plane_model().verts;
@@ -178,6 +181,7 @@ class render implements GLSurfaceView.Renderer {
 
         eng.beginMainPass(screenres);
 
+        triangleProp.MeshMeshInteract(triangle, plane);
         triangle.Draw(eng);
         plane.Draw(eng);
         monitor.Draw(eng);
