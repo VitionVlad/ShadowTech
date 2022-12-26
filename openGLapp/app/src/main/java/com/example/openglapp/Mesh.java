@@ -31,7 +31,7 @@ public class Mesh {
     private mat4 meshMatrix = new mat4();
     private vec3 aabb = new vec3();
 
-    public boolean enablePhysics = true;
+    public boolean enablePLayerInteract = true;
 
     private void CalcAABB(){
         for(int i = 0; i!= vertexes.length; i+=3){
@@ -107,7 +107,7 @@ public class Mesh {
     }
     public void Draw(Engine handle){
         if(handle.shadowpass == false){
-            if(handle.enablePhysics == true && enablePhysics){
+            if(handle.enablePhysics == true && enablePLayerInteract){
                 handle.aabbPlayer(meshPosition, aabb);
             }
             GLES32.glUseProgram(program);
