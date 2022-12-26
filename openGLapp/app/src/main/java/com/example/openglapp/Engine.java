@@ -1,4 +1,3 @@
-
 package com.example.openglapp;
 
 import android.opengl.GLES20;
@@ -10,6 +9,9 @@ import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 
 public class Engine {
+    public vec3 lastPos = new vec3();
+    public vec3 camsize = new vec3(0.1f, 1.7f, 0.1f);
+
     public float[] lightPositions = {
             0, 0, 0, // 1 0
             0, 0, 0, // 2 3
@@ -94,7 +96,7 @@ public class Engine {
                     "   vec2 uv = gl_FragCoord.xy/scrres.xy;" +
                     "  color = vec4( texture(tex1, uv).rgb, 1);" +
                     "}";
-    public vec3 pos = new vec3(0, 0, 0);
+    public vec3 pos = new vec3(1.5f, -5f, -1.5f);
     public vec2 rot = new vec2(0, 0);
     public vec2 touchpos = new vec2(0, 0);
     public float speed = 0;
@@ -124,6 +126,23 @@ public class Engine {
     public int[] frstpasstex = new int[1];
     public int[] frstpassdtex = new int[1];
     public ivec2 passRes = new ivec2(1280, 720);
+
+    public vec3 clearCol = new vec3(0, 0, 0);
+
+    public boolean enablePhysics = true;
+
+    private static boolean between(float x, float n1, float n2){
+        return x >= n1 && x <= n2;
+    }
+    public void aabbPlayer(vec3 meshPos, vec3 meshBorder){
+        if(between(-pos.x, meshPos.x- meshBorder.x, meshPos.x+meshBorder.x)&&between(-pos.y, meshPos.y - meshBorder.y, meshBorder.y+meshPos.y+ camsize.y)&&between(-pos.z, meshPos.z-meshBorder.z, meshBorder.z+meshPos.z)){
+            pos.y = lastPos.y;
+            if(between(-pos.y, meshPos.y - meshBorder.y, meshBorder.y+meshPos.y+ camsize.y/2)){
+                pos.x = lastPos.x;
+                pos.z = lastPos.z;
+            }
+        }
+    }
     private void setupRPass(){
         GLES32.glBindFramebuffer(GLES32.GL_FRAMEBUFFER, frstpassfrm[0]);
         GLES32.glEnable(GLES32.GL_DEPTH_TEST);
@@ -264,10 +283,12 @@ public class Engine {
         GLES32.glUseProgram(sprogram);
     }
     public void beginMainPass(ivec2 resolution){
+        pos.y += 0.01f;
         shadowpass = false;
         passRes = resolution;
         setupRPass();
         GLES32.glBindFramebuffer(GLES32.GL_FRAMEBUFFER, frstpassfrm[0]);
+        GLES32.glClearColor(clearCol.x, clearCol.y, clearCol.z, 1.0f);
         GLES32.glClear(GLES32.GL_COLOR_BUFFER_BIT | GLES32.GL_DEPTH_BUFFER_BIT);
         GLES32.glViewport(0, 0, passRes.x, passRes.y);
 
@@ -307,5 +328,8 @@ public class Engine {
 
         GLES32.glDrawArrays(GLES32.GL_TRIANGLES, 0, scrsurf.length/3);
         GLES32.glDisableVertexAttribArray(positionHandle);
+        lastPos.x = pos.x;
+        lastPos.y = pos.y;
+        lastPos.z = pos.z;
     }
 }

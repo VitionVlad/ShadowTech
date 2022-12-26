@@ -127,9 +127,9 @@ class render implements GLSurfaceView.Renderer {
     @Override
     public void onSurfaceCreated(GL10 gl10, EGLConfig eglConfig) {
         eng.Init();
-        //eng.shadowProj.buildperspectivemat(90, 0.1f, 100, 1);
-        eng.shadowProj.buildorthomat(1, -1, 1, -1, 0.1f, 100f);
-        eng.shadowTrans.buildtranslatemat(new vec3(0, -1, 2));
+        eng.shadowProj.buildperspectivemat(90, 0.1f, 100, 1);
+        //eng.shadowProj.buildorthomat(1, -1, 1, -1, 0.1f, 100f);
+        eng.shadowTrans.buildtranslatemat(new vec3(0, 0, -1));
         eng.shadowxrot.buildxrotmat(-0.2f);
         eng.shadowyrot.buildyrotmat(0);
         eng.setLight(1, new vec3(0, 1, 2f), new vec3(1, 1, 0.5f), 1);

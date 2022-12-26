@@ -29,7 +29,23 @@ public class Mesh {
     private int[] specularHandle = new int[1];
     public vec3 meshPosition = new vec3();
     private mat4 meshMatrix = new mat4();
+    private vec3 aabb = new vec3();
 
+    public boolean enablePhysics = true;
+
+    private void CalcAABB(){
+        for(int i = 0; i!= vertexes.length; i+=3){
+            if(Math.abs(vertexes[i]) >= aabb.x ){
+                aabb.x = Math.abs(vertexes[i]);
+            }
+            if(Math.abs(vertexes[i+1]) >= aabb.y ){
+                aabb.y = Math.abs(vertexes[i+1]);
+            }
+            if(Math.abs(vertexes[i+2]) >= aabb.z ){
+                aabb.z = Math.abs(vertexes[i+2]);
+            }
+        }
+    }
     public void initMesh(String fshader, String vshader, Engine handle){
         int fshaderprog = GLES32.glCreateShader(GLES32.GL_FRAGMENT_SHADER);
         int vshaderprog = GLES32.glCreateShader(GLES32.GL_VERTEX_SHADER);
@@ -87,9 +103,13 @@ public class Mesh {
         GLES32.glTexParameteri(GLES32.GL_TEXTURE_2D, GLES32.GL_TEXTURE_MIN_FILTER, GLES32.GL_NEAREST);
         GLES32.glTexParameteri(GLES32.GL_TEXTURE_2D, GLES32.GL_TEXTURE_MAG_FILTER, GLES32.GL_LINEAR);
         GLES32.glBindTexture(GLES32.GL_TEXTURE_2D, 0);
+        CalcAABB();
     }
     public void Draw(Engine handle){
         if(handle.shadowpass == false){
+            if(handle.enablePhysics == true && enablePhysics){
+                handle.aabbPlayer(meshPosition, aabb);
+            }
             GLES32.glUseProgram(program);
 
             GLES32.glActiveTexture(GLES32.GL_TEXTURE0);
