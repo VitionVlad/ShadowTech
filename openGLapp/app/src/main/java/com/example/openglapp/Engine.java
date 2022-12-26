@@ -135,7 +135,7 @@ public class Engine {
         return x >= n1 && x <= n2;
     }
     public void aabbPlayer(vec3 meshPos, vec3 meshBorder){
-        if(between(-pos.x, meshPos.x- meshBorder.x, meshPos.x+meshBorder.x)&&between(-pos.y, meshPos.y - meshBorder.y, meshBorder.y+meshPos.y+ camsize.y)&&between(-pos.z, meshPos.z-meshBorder.z, meshBorder.z+meshPos.z)){
+        if(between(-pos.x, meshPos.x- meshBorder.x- camsize.x, meshPos.x+meshBorder.x+ camsize.x)&&between(-pos.y, meshPos.y - meshBorder.y, meshBorder.y+meshPos.y+ camsize.y)&&between(-pos.z, meshPos.z-meshBorder.z- camsize.z, meshBorder.z+meshPos.z+ camsize.z)){
             pos.y = lastPos.y;
             if(between(-pos.y, meshPos.y - meshBorder.y, meshBorder.y+meshPos.y+ camsize.y/2)){
                 pos.x = lastPos.x;
