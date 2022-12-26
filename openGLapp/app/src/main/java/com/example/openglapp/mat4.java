@@ -58,29 +58,10 @@ public class mat4 {
         mat[7] = (t+b)/(t-b);
         mat[11] = (zFar+zNear)/(zFar-zNear);
     }
-    public void lookAt(vec3 lookf, vec3 lookt ,vec3 up){
-        vec3 zaxis = new vec3();
-        zaxis.normalize(new vec3(lookt.x-lookf.x, lookt.y-lookf.y, lookt.z-lookf.z));
-        vec3 xaxis = new vec3();
-        xaxis.cross(up, zaxis);
-        xaxis.normalize(xaxis);
-        vec3 yaxis = new vec3();
-        yaxis.cross(zaxis, xaxis);
-        mat[0] = xaxis.x;
-        mat[4] = yaxis.x;
-        mat[8] = zaxis.x;
-
-        mat[1] = xaxis.y;
-        mat[5] = yaxis.y;
-        mat[9] = zaxis.y;
-
-        mat[2] = xaxis.z;
-        mat[6] = yaxis.z;
-        mat[10] = zaxis.z;
-
-        mat[2] = -xaxis.dot(xaxis, lookf);
-        mat[6] = -yaxis.dot(yaxis, lookf);
-        mat[10] = -zaxis.dot(zaxis, lookf);
+    public void buildIdentityMat(){
+        mat[0] = 1;
+        mat[5] = 1;
+        mat[10] = 10;
         mat[15] = 1;
     }
 }

@@ -7,6 +7,7 @@ import androidx.core.view.WindowInsetsControllerCompat;
 
 import android.content.Context;
 import android.opengl.GLSurfaceView;
+import android.opengl.Matrix;
 import android.os.Bundle;
 
 import javax.microedition.khronos.egl.EGLConfig;
@@ -91,7 +92,7 @@ class render implements GLSurfaceView.Renderer {
                     "  float diffuse = max(dot(norm, ldir), 0.0);" +
                     "  vec3 viewDir = normalize(-viewPos - fpos);" +
                     "  vec3 halfwayDir = normalize(ldir + viewDir);" +
-                    "  float spec = pow(max(dot(norm, halfwayDir), 0.0), 256.0) * texture(spec1, fuv).r;" +
+                    "  float spec = pow(max(dot(norm, halfwayDir), 0.0), 16.0) * texture(spec1, fuv).r;" +
                     "  return float(spec + diffuse)*((1.0-shadowMapping()) + ambient);" +
                     "}" +
                     "void main() {" +
@@ -126,9 +127,9 @@ class render implements GLSurfaceView.Renderer {
     @Override
     public void onSurfaceCreated(GL10 gl10, EGLConfig eglConfig) {
         eng.Init();
-        eng.shadowProj.buildperspectivemat(90, 0.1f, 100, 1);
-        //eng.shadowProj.buildorthomat(new vec2(5, 5), new vec2(5, 5), 0.1f, 100f);
-        eng.shadowTrans.buildtranslatemat(new vec3(0, 0, -1f));
+        //eng.shadowProj.buildperspectivemat(90, 0.1f, 100, 1);
+        eng.shadowProj.buildorthomat(1, -1, 1, -1, 0.1f, 100f);
+        eng.shadowTrans.buildtranslatemat(new vec3(0, -1, 2));
         eng.shadowxrot.buildxrotmat(-0.2f);
         eng.shadowyrot.buildyrotmat(0);
         eng.setLight(1, new vec3(0, 1, 2f), new vec3(1, 1, 0.5f), 1);
