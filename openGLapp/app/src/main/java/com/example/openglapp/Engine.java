@@ -141,9 +141,9 @@ public class Engine {
                 pos.x = lastPos.x;
                 pos.z = lastPos.z;
             }
+            lastPos.x = pos.x;
+            lastPos.z = pos.z;
         }
-        lastPos.x = pos.x;
-        lastPos.z = pos.z;
     }
     private void setupRPass(){
         GLES32.glBindFramebuffer(GLES32.GL_FRAMEBUFFER, frstpassfrm[0]);
