@@ -142,6 +142,8 @@ public class Engine {
                 pos.z = lastPos.z;
             }
         }
+        lastPos.x = pos.x;
+        lastPos.z = pos.z;
     }
     private void setupRPass(){
         GLES32.glBindFramebuffer(GLES32.GL_FRAMEBUFFER, frstpassfrm[0]);
@@ -283,7 +285,9 @@ public class Engine {
         GLES32.glUseProgram(sprogram);
     }
     public void beginMainPass(ivec2 resolution){
-        pos.y += 0.01f;
+        if(enablePhysics == true){
+            pos.y += 0.01f;
+        }
         shadowpass = false;
         passRes = resolution;
         setupRPass();
@@ -328,8 +332,6 @@ public class Engine {
 
         GLES32.glDrawArrays(GLES32.GL_TRIANGLES, 0, scrsurf.length/3);
         GLES32.glDisableVertexAttribArray(positionHandle);
-        lastPos.x = pos.x;
         lastPos.y = pos.y;
-        lastPos.z = pos.z;
     }
 }
