@@ -153,8 +153,6 @@ class Engine{
                 pos.x = lastPos.x;
                 pos.z = lastPos.z;
             }
-            lastPos.x = pos.x;
-            lastPos.z = pos.z;
         }
     }
     void setupRPass(){
@@ -403,5 +401,7 @@ class Engine{
         glfwSwapBuffers(window);
         glfwPollEvents();
         lastPos.y = pos.y;
+        lastPos.x = pos.x;
+        lastPos.z = pos.z;
     }
 };

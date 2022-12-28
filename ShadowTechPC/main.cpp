@@ -84,7 +84,7 @@ const char* fragmentShaderCode =
                     "  return float(spec + diffuse)*((1.0-shadowMapping()) + ambient);" 
                     "}" 
                     "void main() {" 
-                    "  vec3 toOut = phongl(lightsPos[0]) * lightsCol[0] * texture(tex1, fuv).rgb;;" 
+                    "  vec3 toOut = phongl(lightsPos[0]) * lightsCol[0] * texture(tex1, fuv).rgb;" 
                     "  color = vec4( toOut, 1.0);" 
                     "}";
 
@@ -105,20 +105,24 @@ const char* fragmentShaderCode2 =
 
 Engine eng;
 
-void movecallback(GLFWwindow* window, int key, int scancode, int action, int mods){
-    if (key == GLFW_KEY_W && action == GLFW_REPEAT){
+void movecallback(){
+    int state = glfwGetKey(eng.window, GLFW_KEY_W);
+    if (state == GLFW_PRESS){ //w
         eng.pos.z += cos(eng.rot.y) * cos(eng.rot.x) * 0.1;
         eng.pos.x += cos(eng.rot.y) * sin(eng.rot.x) * -0.1;
     }
-    if (key == GLFW_KEY_A && action == GLFW_REPEAT){
+    state = glfwGetKey(eng.window, GLFW_KEY_A);
+    if (state == GLFW_PRESS){ // a
         eng.pos.x += cos(eng.rot.y) * cos(eng.rot.x) * 0.1;
         eng.pos.z -= cos(eng.rot.y) * sin(eng.rot.x) * -0.1;
     }
-    if (key == GLFW_KEY_S && action == GLFW_REPEAT){
+    state = glfwGetKey(eng.window, GLFW_KEY_S);
+    if (state == GLFW_PRESS){ // s
         eng.pos.z -= cos(eng.rot.y) * cos(eng.rot.x) * 0.1;
         eng.pos.x -= cos(eng.rot.y) * sin(eng.rot.x) * -0.1;
     }
-    if (key == GLFW_KEY_D && action == GLFW_REPEAT){
+    state = glfwGetKey(eng.window, GLFW_KEY_D);
+    if (state == GLFW_PRESS){ //d
         eng.pos.x -= cos(eng.rot.y) * cos(eng.rot.x) * 0.1;
         eng.pos.z += cos(eng.rot.y) * sin(eng.rot.x) * -0.1;
     }
@@ -146,6 +150,21 @@ int main(){
     triangle.meshPosition.z = -1.5f;
     triangle.meshPosition.y = 5;
     triangle.initMesh(fragmentShaderCode, vertexShaderCode, eng);
+
+    Mesh triangle2;
+
+    eng.copyFloatArray(cube_model().verts, triangle2.vertexes);
+    eng.copyFloatArray(cube_normals().normals, triangle2.normals);
+    eng.copyFloatArray(cube_uv().uv, triangle2.uv);
+    eng.copyucharArray(cube_texture().pixels, triangle2.texture);
+    eng.copyucharArray(cubespec_texture().pixels, triangle2.specular);
+    triangle2.totalv = cube_model().totalv;
+    triangle2.texResolution.x = cube_texture().resx;
+    triangle2.texResolution.y = cube_texture().resy;
+    triangle2.meshPosition.z = -1.5f;
+    triangle2.meshPosition.y = 5;
+    triangle2.meshPosition.x = 2.5f;
+    triangle2.initMesh(fragmentShaderCode, vertexShaderCode, eng);
 
     Mesh plane;
 
@@ -183,20 +202,24 @@ int main(){
         glfwGetCursorPos(eng.window, &mousepos.x, &mousepos.y);
         eng.rot.x = mousepos.x/eng.resolution.x;
         eng.rot.y = -mousepos.y/eng.resolution.y;
-        glfwSetKeyCallback(eng.window, movecallback);
 
         eng.beginShadowPass();
 
         triangle.Draw(eng);
         plane.Draw(eng);
         monitor.Draw(eng);
+        triangle2.Draw(eng);
 
         eng.beginMainPass();
 
+        movecallback();
+
         triangleProp.MeshMeshInteract(triangle, plane);
+        triangleProp.MeshMeshInteract(triangle2, plane);
         triangle.Draw(eng);
         plane.Draw(eng);
         monitor.Draw(eng);
+        triangle2.Draw(eng);
 
         eng.endFrame();
     }
