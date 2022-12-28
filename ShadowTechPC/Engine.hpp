@@ -53,7 +53,7 @@ class Engine{
                     "  color = vec4( texture(tex1, uv).rgb, 1);" 
                     "}";
 
-    vec3 lastPos = vec3();
+    vec3 lastPos = vec3(0, 0, 0);
     vec3 camsize = vec3(0.1f, 1.7f, 0.1f);
 
     float lightPositions[30] = {
@@ -152,9 +152,10 @@ class Engine{
             if (between(-pos.y, meshPos.y - meshBorder.y, meshBorder.y + meshPos.y + camsize.y / 2)){
                 pos.x = lastPos.x;
                 pos.z = lastPos.z;
-                cout << pos.x << " " << lastPos.x << endl;
             }
         }
+        lastPos.x = pos.x;
+        lastPos.z = pos.z;
     }
     void setupRPass(){
         glBindFramebuffer(GL_FRAMEBUFFER, frstpassfrm);
@@ -401,8 +402,6 @@ class Engine{
         glDisableVertexAttribArray(0);
         glfwSwapBuffers(window);
         glfwPollEvents();
-        lastPos.x = pos.x;
         lastPos.y = pos.y;
-        lastPos.z = pos.z;
     }
 };
