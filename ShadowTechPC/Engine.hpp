@@ -153,9 +153,9 @@ class Engine{
                 pos.x = lastPos.x;
                 pos.z = lastPos.z;
             }
+            lastPos.x = pos.x;
+            lastPos.z = pos.z;
         }
-        lastPos.x = pos.x;
-        lastPos.z = pos.z;
     }
     void setupRPass(){
         glBindFramebuffer(GL_FRAMEBUFFER, frstpassfrm);
