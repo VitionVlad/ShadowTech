@@ -141,8 +141,6 @@ public class Engine {
                 pos.x = lastPos.x;
                 pos.z = lastPos.z;
             }
-            lastPos.x = pos.x;
-            lastPos.z = pos.z;
         }
     }
     private void setupRPass(){
@@ -333,5 +331,7 @@ public class Engine {
         GLES32.glDrawArrays(GLES32.GL_TRIANGLES, 0, scrsurf.length/3);
         GLES32.glDisableVertexAttribArray(positionHandle);
         lastPos.y = pos.y;
+        lastPos.x = pos.x;
+        lastPos.z = pos.z;
     }
 }
