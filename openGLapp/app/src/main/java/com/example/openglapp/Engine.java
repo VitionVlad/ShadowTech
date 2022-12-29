@@ -68,8 +68,9 @@ public class Engine {
                     "uniform mat4 sxrot[10];" +
                     "uniform mat4 syrot[10];" +
                     "uniform mat4 meshm;" +
+                    "uniform int sCnt;" +
                     "void main() {" +
-                    "  gl_Position = sproj[0] * sxrot[0] * syrot[0] * meshm * stranslate[0] * vec4(positions, 1.0f);" +
+                    "  gl_Position = sproj[sCnt] * sxrot[sCnt] * syrot[sCnt] * meshm * stranslate[sCnt] * vec4(positions, 1.0f);" +
                     "}";
 
     private final String shadowFragment =
@@ -233,49 +234,14 @@ public class Engine {
         }
     }
     public void setLight(int n, vec3 position, vec3 color, int lightState) {
-        int selected = 0;
-        switch (n){
-            case 1:
-                selected = 0;
-                break;
-            case 2:
-                selected = 3;
-                break;
-            case 3:
-                selected = 6;
-                break;
-            case 4:
-                selected = 9;
-                break;
-            case 5:
-                selected = 12;
-                break;
-            case 6:
-                selected = 15;
-                break;
-            case 7:
-                selected = 18;
-                break;
-            case 8:
-                selected = 21;
-                break;
-            case 9:
-                selected = 24;
-                break;
-            case 10:
-                selected = 27;
-                break;
-            default:
-                System.out.println("Engine-error: not available such light source!");
-                break;
-        }
+        int selected = n*3;
         lightPositions[selected] = position.x;
         lightPositions[selected+1] = position.y;
         lightPositions[selected+2] = position.z;
         lightColors[selected] = color.x;
         lightColors[selected+1] = color.y;
         lightColors[selected+2] = color.z;
-        usedLights[n-1] = lightState;
+        usedLights[n] = lightState;
     }
     public void beginShadowPass(int cnt){
         shadowpass = true;
@@ -283,6 +249,7 @@ public class Engine {
         GLES32.glClear(GLES32.GL_COLOR_BUFFER_BIT | GLES32.GL_DEPTH_BUFFER_BIT);
         GLES32.glViewport(0, 0, shadowMapResolution, shadowMapResolution);
         GLES32.glUseProgram(sprogram);
+        GLES32.glUniform1i(GLES32.glGetUniformLocation(sprogram, "sCnt"), cnt);
     }
     public void beginMainPass(ivec2 resolution){
         if(enablePhysics == true){

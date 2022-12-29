@@ -134,7 +134,7 @@ class render implements GLSurfaceView.Renderer {
         eng.shadowTrans.buildtranslatemat(new vec3(0, 0, -1), 0);
         eng.shadowxrot.buildxrotmat(-0.2f, 0);
         eng.shadowyrot.buildyrotmat(0, 0);
-        eng.setLight(1, new vec3(0, 1, 2f), new vec3(1, 1, 0.5f), 1);
+        eng.setLight(0, new vec3(0, 1, 2f), new vec3(1, 1, 0.5f), 1);
 
         triangle.vertexes = new cube_model().verts;
         triangle.normals = new cube_normals().verts;
