@@ -62,7 +62,7 @@ class render implements GLSurfaceView.Renderer {
                     "precision mediump float;" +
                     "uniform sampler2D tex1;"+
                     "uniform sampler2D spec1;"+
-                    "uniform sampler2D shadowMap2;"+
+                    "uniform sampler2D shadowMap0;"+
                     "uniform vec3 lightsPos[10];"+
                     "uniform vec3 lightsCol[10];"+
                     "uniform int lightStates[10];"+
@@ -77,7 +77,7 @@ class render implements GLSurfaceView.Renderer {
                     "  float shadow = 0.0f;" +
                     "  if(projected.z <= 1.0f){" +
                     "   projected = (projected + 1.0f)/2.0f;" +
-                    "   float closestDepth = texture(shadowMap2, projected.xy).r;" +
+                    "   float closestDepth = texture(shadowMap0, projected.xy).r;" +
                     "   float currentDepth = projected.z;" +
                     "   if(currentDepth - 0.001 > closestDepth){" +
                     "       shadow+=1.0f;" +
@@ -110,14 +110,14 @@ class render implements GLSurfaceView.Renderer {
                     "precision mediump float;" +
                     "uniform sampler2D tex1;"+
                     "uniform sampler2D spec1;"+
-                    "uniform sampler2D shadowMap2;"+
+                    "uniform sampler2D shadowMap0;"+
                     "uniform vec3 lightsPos[10];"+
                     "in vec4 projlightmat;"+
                     "in vec2 fuv;"+
                     "in vec3 fnormals;"+
                     "layout(location = 0) out vec4 color;"+
                     "void main() {" +
-                    "  color = vec4(texture(shadowMap2, fuv).rrr, 1.0);" +
+                    "  color = vec4(texture(shadowMap0, fuv).rrr, 1.0);" +
                     "}";
 
     Engine eng = new Engine();
@@ -173,7 +173,7 @@ class render implements GLSurfaceView.Renderer {
 
     @Override
     public void onDrawFrame(GL10 gl10) {
-        eng.beginShadowPass(1);
+        eng.beginShadowPass(0);
 
         triangle.Draw(eng);
         plane.Draw(eng);

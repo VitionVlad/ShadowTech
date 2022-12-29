@@ -121,7 +121,7 @@ public class Mesh {
             GLES32.glUniform1i(GLES32.glGetUniformLocation(program, "spec1"), 1);
 
             for(int i = 2; i != 12; i++){
-                String uniname = "shadowMap"+i;
+                String uniname = "shadowMap"+(i-2);
                 GLES32.glActiveTexture(GLES32.GL_TEXTURE0+i);
                 GLES32.glBindTexture(GLES32.GL_TEXTURE_2D, handle.shadowimg[i-2]);
                 GLES32.glUniform1i(GLES32.glGetUniformLocation(program, uniname), i);
