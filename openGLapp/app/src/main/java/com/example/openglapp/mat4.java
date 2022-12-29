@@ -41,6 +41,14 @@ public class mat4 {
         mat[10] = (float) Math.cos(angle);
         mat[15] = 1;
     }
+    public void buildzrotmat(float angle){
+        mat[0] = (float) Math.cos(angle);
+        mat[4] = (float) Math.sin(angle);
+        mat[1] = (float) -Math.sin(angle);
+        mat[5] = (float) Math.cos(angle);
+        mat[10] = 1.0f;
+        mat[15] = 1;
+    }
     public void buildperspectivemat(float fov, float zNear, float zFar, float aspect){
         float S = (float) Math.tan((fov/2)*(Math.PI/180));
         mat[0] = 1/(aspect*S);
@@ -61,7 +69,13 @@ public class mat4 {
     public void buildIdentityMat(){
         mat[0] = 1;
         mat[5] = 1;
-        mat[10] = 10;
+        mat[10] = 1;
+        mat[15] = 1;
+    }
+    public void buildscaleMat(vec3 sc){
+        mat[0] = sc.x;
+        mat[5] = sc.y;
+        mat[10] = sc.z;
         mat[15] = 1;
     }
 }

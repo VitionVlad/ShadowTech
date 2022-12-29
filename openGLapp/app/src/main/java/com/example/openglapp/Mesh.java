@@ -27,8 +27,10 @@ public class Mesh {
     private int uvHandle;
     private int[] albedoHandle = new int[1];
     private int[] specularHandle = new int[1];
+
     public vec3 meshPosition = new vec3();
     private mat4 meshMatrix = new mat4();
+
     public vec3 aabb = new vec3();
 
     public boolean enablePLayerInteract = true;
@@ -128,9 +130,7 @@ public class Mesh {
             }
 
             GLES32.glUniform3fv(GLES32.glGetUniformLocation(program, "lightsPos"), 10, handle.lightPositions, 0);
-
             GLES32.glUniform3fv(GLES32.glGetUniformLocation(program, "lightsCol"), 10, handle.lightColors, 0);
-
             GLES32.glUniform3f(GLES32.glGetUniformLocation(program, "viewPos"), handle.pos.x, handle.pos.y, handle.pos.z);
 
 
@@ -167,7 +167,6 @@ public class Mesh {
             GLES32.glVertexAttribPointer(positionHandle, 3, GLES32.GL_FLOAT, false, 0, vertexbuf);
 
             GLES32.glUniformMatrix4fv(GLES32.glGetUniformLocation(handle.sprogram, "meshm"), 1, false, meshMatrix.mat,  0);
-
             GLES32.glUniformMatrix4fv(GLES32.glGetUniformLocation(handle.sprogram, "sproj"), 10, false, handle.shadowProj.mat,  0);
             GLES32.glUniformMatrix4fv(GLES32.glGetUniformLocation(handle.sprogram, "stranslate"), 10, false, handle.shadowTrans.mat,  0);
             GLES32.glUniformMatrix4fv(GLES32.glGetUniformLocation(handle.sprogram, "sxrot"), 10, false, handle.shadowxrot.mat,  0);
