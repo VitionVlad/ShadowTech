@@ -8,7 +8,7 @@
 
 #include <GLFW/glfw3.h>
 
-#include "mat4.hpp"
+#include "mat40.hpp"
 
 #include "vec2.hpp"
 
@@ -21,13 +21,13 @@ class Engine{
     const char* shadowVertex =
                     "#version 400\n" 
                     "layout (location = 0) in vec3 positions;" 
-                    "uniform mat4 sproj;" 
-                    "uniform mat4 stranslate;" 
-                    "uniform mat4 sxrot;" 
-                    "uniform mat4 syrot;" 
+                    "uniform mat4 sproj[10];" 
+                    "uniform mat4 stranslate[10];" 
+                    "uniform mat4 sxrot[10];" 
+                    "uniform mat4 syrot[10];" 
                     "uniform mat4 meshm;" 
                     "void main() {" 
-                    "  gl_Position = sproj * sxrot * syrot * meshm * stranslate * vec4(positions, 1.0f);" 
+                    "  gl_Position = sproj[0] * sxrot[0] * syrot[0] * meshm * stranslate[0] * vec4(positions, 1.0f);" 
                     "}";
 
     const char* shadowFragment =
@@ -119,16 +119,16 @@ class Engine{
     float fov = 110;
     GLuint program;
 
-    GLuint sFrm;
+    GLuint sFrm[10];
     GLuint sprogram;
-    GLuint shadowimg;
+    GLuint shadowimg[10];
     int shadowMapResolution = 4000;
     bool shadowpass = false;
 
-    mat4 shadowProj = mat4();
-    mat4 shadowTrans = mat4();
-    mat4 shadowxrot = mat4();
-    mat4 shadowyrot = mat4();
+    mat40 shadowProj;
+    mat40 shadowTrans;
+    mat40 shadowxrot;
+    mat40 shadowyrot;
 
     GLuint positionHandle;
     GLuint frstpassfrm;
@@ -180,7 +180,7 @@ class Engine{
         glDrawBuffers(1, &frdrw);
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
     }
-    void setupShadowMapping()
+    void setupShadowMapping(GLuint& sFrm, GLuint& shadowimg)
     {
         glBindFramebuffer(GL_FRAMEBUFFER, sFrm);
         glEnable(GL_DEPTH_TEST);
@@ -262,12 +262,14 @@ class Engine{
         setupRPass();
         cout << "engine_init: first pass created" << endl;
 
-        glGenFramebuffers(1, &sFrm);
-        glGenTextures(1, &shadowimg);
+        glGenFramebuffers(10, sFrm);
+        glGenTextures(10, shadowimg);
 
         cout << "engine_init: second pass generated" << endl;
-
-        setupShadowMapping();
+        
+        for(int i = 0; i != 10; i++){
+            setupShadowMapping(sFrm[i], shadowimg[i]);
+        }
 
         cout << "engine_init: second pass created" << endl;
 
@@ -334,10 +336,10 @@ class Engine{
             dest[i] = tocop[i];
         }
     }
-    void beginShadowPass()
+    void beginShadowPass(int cnt)
     {
         shadowpass = true;
-        glBindFramebuffer(GL_FRAMEBUFFER, sFrm);
+        glBindFramebuffer(GL_FRAMEBUFFER, sFrm[cnt]);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glViewport(0, 0, shadowMapResolution, shadowMapResolution);
         glUseProgram(sprogram);

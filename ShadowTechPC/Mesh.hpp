@@ -133,9 +133,12 @@ class Mesh {
             glBindTexture(GL_TEXTURE_2D, specularHandle);
             glUniform1i(glGetUniformLocation(program, "spec1"), 1);
 
-            glActiveTexture(GL_TEXTURE10);
-            glBindTexture(GL_TEXTURE_2D, handle.shadowimg);
-            glUniform1i(glGetUniformLocation(program, "shadowMap"), 10);
+            for(int i = 2; i!=12; i++){
+                string n = "shadowMap"+to_string(i-2);
+                glActiveTexture(GL_TEXTURE0+i);
+                glBindTexture(GL_TEXTURE_2D, handle.shadowimg[i-2]);
+                glUniform1i(glGetUniformLocation(program, n.c_str()), i);
+            }
 
             glUniform3fv(glGetUniformLocation(program, "lightsPos"), 10, handle.lightPositions);
 
@@ -167,10 +170,10 @@ class Mesh {
             glUniformMatrix4fv(glGetUniformLocation(program, "meshm"), 1, false, meshMatrix.mat);
             glUniform1iv(glGetUniformLocation(program, "lightStates"), 10, handle.usedLights);
 
-            glUniformMatrix4fv(glGetUniformLocation(program, "sproj"), 1, false, handle.shadowProj.mat);
-            glUniformMatrix4fv(glGetUniformLocation(program, "stranslate"), 1, false, handle.shadowTrans.mat);
-            glUniformMatrix4fv(glGetUniformLocation(program, "sxrot"), 1, false, handle.shadowxrot.mat);
-            glUniformMatrix4fv(glGetUniformLocation(program, "syrot"), 1, false, handle.shadowyrot.mat);
+            glUniformMatrix4fv(glGetUniformLocation(program, "sproj"), 10, false, handle.shadowProj.mat);
+            glUniformMatrix4fv(glGetUniformLocation(program, "stranslate"), 10, false, handle.shadowTrans.mat);
+            glUniformMatrix4fv(glGetUniformLocation(program, "sxrot"), 10, false, handle.shadowxrot.mat);
+            glUniformMatrix4fv(glGetUniformLocation(program, "syrot"), 10, false, handle.shadowyrot.mat);
         }else{
             meshMatrix.buildtranslatemat(meshPosition);
 
@@ -181,10 +184,10 @@ class Mesh {
             glVertexAttribPointer(0, 3, GL_FLOAT, false, 3*sizeof(float),  (void*)0);
 
 
-            glUniformMatrix4fv(glGetUniformLocation(handle.sprogram, "sproj"), 1, false, handle.shadowProj.mat);
-            glUniformMatrix4fv(glGetUniformLocation(handle.sprogram, "stranslate"), 1, false, handle.shadowTrans.mat);
-            glUniformMatrix4fv(glGetUniformLocation(handle.sprogram, "sxrot"), 1, false, handle.shadowxrot.mat);
-            glUniformMatrix4fv(glGetUniformLocation(handle.sprogram, "syrot"), 1, false, handle.shadowyrot.mat);
+            glUniformMatrix4fv(glGetUniformLocation(handle.sprogram, "sproj"), 10, false, handle.shadowProj.mat);
+            glUniformMatrix4fv(glGetUniformLocation(handle.sprogram, "stranslate"), 10, false, handle.shadowTrans.mat);
+            glUniformMatrix4fv(glGetUniformLocation(handle.sprogram, "sxrot"), 10, false, handle.shadowxrot.mat);
+            glUniformMatrix4fv(glGetUniformLocation(handle.sprogram, "syrot"), 10, false, handle.shadowyrot.mat);
             glUniformMatrix4fv(glGetUniformLocation(handle.sprogram, "meshm"), 1, false, meshMatrix.mat);
         }
 

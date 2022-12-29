@@ -29,10 +29,10 @@ const char* vertexShaderCode =
                     "uniform mat4 yrot;" 
                     "uniform mat4 meshm;" 
 
-                    "uniform mat4 sproj;" 
-                    "uniform mat4 stranslate;" 
-                    "uniform mat4 sxrot;" 
-                    "uniform mat4 syrot;" 
+                    "uniform mat4 sproj[10];" 
+                    "uniform mat4 stranslate[10];" 
+                    "uniform mat4 sxrot[10];" 
+                    "uniform mat4 syrot[10];" 
 
                     "out vec2 fuv;"
                     "out vec3 fnormals;"
@@ -43,14 +43,14 @@ const char* vertexShaderCode =
                             "fuv = uv;"
                             "fnormals = mat3(transpose(inverse(mat4(1.0f)))) * normals;"
                             "fpos = vec3(mat4(1.0f) * vec4(positions, 1.0f));"
-                            "projlightmat = sproj * sxrot * syrot * stranslate * meshm * vec4(positions, 1.0f);"
+                            "projlightmat = sproj[0] * sxrot[0] * syrot[0] * stranslate[0] * meshm * vec4(positions, 1.0f);"
                     "}";
 
 const char* fragmentShaderCode =
                     "#version 400\n" 
                     "uniform sampler2D tex1;"
                     "uniform sampler2D spec1;"
-                    "uniform sampler2D shadowMap;"
+                    "uniform sampler2D shadowMap0;"
                     "uniform vec3 lightsPos[10];"
                     "uniform vec3 lightsCol[10];"
                     "uniform int lightStates[10];"
@@ -65,7 +65,7 @@ const char* fragmentShaderCode =
                     "  float shadow = 0.0f;" 
                     "  if(projected.z <= 1.0f){" 
                     "   projected = (projected + 1.0f)/2.0f;" 
-                    "   float closestDepth = texture(shadowMap, projected.xy).r;" 
+                    "   float closestDepth = texture(shadowMap0, projected.xy).r;" 
                     "   float currentDepth = projected.z;" 
                     "   if(currentDepth - 0.001 > closestDepth){" 
                     "       shadow+=1.0f;" 
@@ -93,48 +93,50 @@ const char* fragmentShaderCode2 =
                     "precision mediump float;" 
                     "uniform sampler2D tex1;"
                     "uniform sampler2D spec1;"
-                    "uniform sampler2D shadowMap;"
+                    "uniform sampler2D shadowMap0;"
                     "uniform vec3 lightsPos[10];"
                     "in vec4 projlightmat;"
                     "in vec2 fuv;"
                     "in vec3 fnormals;"
                     "layout(location = 0) out vec4 color;"
                     "void main() {" 
-                    "  color = vec4(texture(shadowMap, fuv).rrr, 1.0);" 
+                    "  color = vec4(texture(shadowMap0, fuv).rrr, 1.0);" 
                     "}";
 
 Engine eng;
 
+float speed = 0.05;
+
 void movecallback(){
     int state = glfwGetKey(eng.window, GLFW_KEY_W);
     if (state == GLFW_PRESS){ //w
-        eng.pos.z += cos(eng.rot.y) * cos(eng.rot.x) * 0.1;
-        eng.pos.x += cos(eng.rot.y) * sin(eng.rot.x) * -0.1;
+        eng.pos.z += cos(eng.rot.y) * cos(eng.rot.x) * speed;
+        eng.pos.x += cos(eng.rot.y) * sin(eng.rot.x) * -speed;
     }
     state = glfwGetKey(eng.window, GLFW_KEY_A);
     if (state == GLFW_PRESS){ // a
-        eng.pos.x += cos(eng.rot.y) * cos(eng.rot.x) * 0.1;
-        eng.pos.z -= cos(eng.rot.y) * sin(eng.rot.x) * -0.1;
+        eng.pos.x += cos(eng.rot.y) * cos(eng.rot.x) * speed;
+        eng.pos.z -= cos(eng.rot.y) * sin(eng.rot.x) * -speed;
     }
     state = glfwGetKey(eng.window, GLFW_KEY_S);
     if (state == GLFW_PRESS){ // s
-        eng.pos.z -= cos(eng.rot.y) * cos(eng.rot.x) * 0.1;
-        eng.pos.x -= cos(eng.rot.y) * sin(eng.rot.x) * -0.1;
+        eng.pos.z -= cos(eng.rot.y) * cos(eng.rot.x) * speed;
+        eng.pos.x -= cos(eng.rot.y) * sin(eng.rot.x) * -speed;
     }
     state = glfwGetKey(eng.window, GLFW_KEY_D);
     if (state == GLFW_PRESS){ //d
-        eng.pos.x -= cos(eng.rot.y) * cos(eng.rot.x) * 0.1;
-        eng.pos.z += cos(eng.rot.y) * sin(eng.rot.x) * -0.1;
+        eng.pos.x -= cos(eng.rot.y) * cos(eng.rot.x) * speed;
+        eng.pos.z += cos(eng.rot.y) * sin(eng.rot.x) * -speed;
     }
 }
 
 int main(){
     eng.Init();
-    eng.shadowProj.buildperspectivemat(90, 0.1f, 100, 1);
-    //eng.shadowProj.buildorthomat(1, -1, 1, -1, 0.1f, 100f);
-    eng.shadowTrans.buildtranslatemat(vec3(0, 0, -1));
-    eng.shadowxrot.buildxrotmat(-0.2f);
-    eng.shadowyrot.buildyrotmat(0);
+    eng.shadowProj.buildperspectivemat(90, 0.1, 100, 1, 0);
+    //eng.shadowProj.buildorthomat(1, -1, 1, -1, speedf, 100f);
+    eng.shadowTrans.buildtranslatemat(vec3(0, 0, -1), 0);
+    eng.shadowxrot.buildxrotmat(-0.2f, 0);
+    eng.shadowyrot.buildyrotmat(0, 0);
     eng.setLight(1, vec3(0, 1, 2), vec3(1, 1, 0.5f), 1);
 
     Mesh triangle;
@@ -203,11 +205,12 @@ int main(){
         eng.rot.x = mousepos.x/eng.resolution.x;
         eng.rot.y = -mousepos.y/eng.resolution.y;
 
-        eng.beginShadowPass();
+        eng.beginShadowPass(0);
 
         triangle.Draw(eng);
         plane.Draw(eng);
         monitor.Draw(eng);
+
         triangle2.Draw(eng);
 
         eng.beginMainPass();
