@@ -120,9 +120,12 @@ public class Mesh {
             GLES32.glBindTexture(GLES32.GL_TEXTURE_2D, specularHandle[0]);
             GLES32.glUniform1i(GLES32.glGetUniformLocation(program, "spec1"), 1);
 
-            GLES32.glActiveTexture(GLES32.GL_TEXTURE10);
-            GLES32.glBindTexture(GLES32.GL_TEXTURE_2D, handle.shadowimg[0]);
-            GLES32.glUniform1i(GLES32.glGetUniformLocation(program, "shadowMap"), 10);
+            for(int i = 2; i != 12; i++){
+                String uniname = "shadowMap"+i;
+                GLES32.glActiveTexture(GLES32.GL_TEXTURE0+i);
+                GLES32.glBindTexture(GLES32.GL_TEXTURE_2D, handle.shadowimg[i-2]);
+                GLES32.glUniform1i(GLES32.glGetUniformLocation(program, uniname), i);
+            }
 
             GLES32.glUniform3fv(GLES32.glGetUniformLocation(program, "lightsPos"), 10, handle.lightPositions, 0);
 
@@ -152,10 +155,10 @@ public class Mesh {
             GLES32.glUniformMatrix4fv(GLES32.glGetUniformLocation(program, "meshm"), 1, false, meshMatrix.mat,  0);
             GLES32.glUniform1iv(GLES32.glGetUniformLocation(program, "lightStates"), 10, handle.usedLights, 0);
 
-            GLES32.glUniformMatrix4fv(GLES32.glGetUniformLocation(program, "sproj"), 1, false, handle.shadowProj.mat,  0);
-            GLES32.glUniformMatrix4fv(GLES32.glGetUniformLocation(program, "stranslate"), 1, false, handle.shadowTrans.mat,  0);
-            GLES32.glUniformMatrix4fv(GLES32.glGetUniformLocation(program, "sxrot"), 1, false, handle.shadowxrot.mat,  0);
-            GLES32.glUniformMatrix4fv(GLES32.glGetUniformLocation(program, "syrot"), 1, false, handle.shadowyrot.mat,  0);
+            GLES32.glUniformMatrix4fv(GLES32.glGetUniformLocation(program, "sproj"), 10, false, handle.shadowProj.mat,  0);
+            GLES32.glUniformMatrix4fv(GLES32.glGetUniformLocation(program, "stranslate"), 10, false, handle.shadowTrans.mat,  0);
+            GLES32.glUniformMatrix4fv(GLES32.glGetUniformLocation(program, "sxrot"), 10, false, handle.shadowxrot.mat,  0);
+            GLES32.glUniformMatrix4fv(GLES32.glGetUniformLocation(program, "syrot"), 10, false, handle.shadowyrot.mat,  0);
         }else{
             meshMatrix.buildtranslatemat(meshPosition);
 
@@ -165,11 +168,10 @@ public class Mesh {
 
             GLES32.glUniformMatrix4fv(GLES32.glGetUniformLocation(handle.sprogram, "meshm"), 1, false, meshMatrix.mat,  0);
 
-            GLES32.glUniformMatrix4fv(GLES32.glGetUniformLocation(handle.sprogram, "sproj"), 1, false, handle.shadowProj.mat,  0);
-            GLES32.glUniformMatrix4fv(GLES32.glGetUniformLocation(handle.sprogram, "stranslate"), 1, false, handle.shadowTrans.mat,  0);
-            GLES32.glUniformMatrix4fv(GLES32.glGetUniformLocation(handle.sprogram, "sxrot"), 1, false, handle.shadowxrot.mat,  0);
-            GLES32.glUniformMatrix4fv(GLES32.glGetUniformLocation(handle.sprogram, "syrot"), 1, false, handle.shadowyrot.mat,  0);
-
+            GLES32.glUniformMatrix4fv(GLES32.glGetUniformLocation(handle.sprogram, "sproj"), 10, false, handle.shadowProj.mat,  0);
+            GLES32.glUniformMatrix4fv(GLES32.glGetUniformLocation(handle.sprogram, "stranslate"), 10, false, handle.shadowTrans.mat,  0);
+            GLES32.glUniformMatrix4fv(GLES32.glGetUniformLocation(handle.sprogram, "sxrot"), 10, false, handle.shadowxrot.mat,  0);
+            GLES32.glUniformMatrix4fv(GLES32.glGetUniformLocation(handle.sprogram, "syrot"), 10, false, handle.shadowyrot.mat,  0);
         }
 
         GLES32.glDrawArrays(GLES32.GL_TRIANGLES, 0, vertexes.length/3);

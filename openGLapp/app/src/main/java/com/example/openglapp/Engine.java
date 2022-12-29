@@ -63,13 +63,13 @@ public class Engine {
     private final String shadowVertex =
                     "#version 320 es\n" +
                     "in vec3 positions;" +
-                    "uniform mat4 sproj;" +
-                    "uniform mat4 stranslate;" +
-                    "uniform mat4 sxrot;" +
-                    "uniform mat4 syrot;" +
+                    "uniform mat4 sproj[10];" +
+                    "uniform mat4 stranslate[10];" +
+                    "uniform mat4 sxrot[10];" +
+                    "uniform mat4 syrot[10];" +
                     "uniform mat4 meshm;" +
                     "void main() {" +
-                    "  gl_Position = sproj * sxrot * syrot * meshm * stranslate * vec4(positions, 1.0f);" +
+                    "  gl_Position = sproj[0] * sxrot[0] * syrot[0] * meshm * stranslate[0] * vec4(positions, 1.0f);" +
                     "}";
 
     private final String shadowFragment =
@@ -109,17 +109,18 @@ public class Engine {
     public float fov = 110;
     private int program;
 
-    public int[] sFrm = new int[1];
+    public int[] sFrm = new int[10];
+    public int[] shadowimg = new int[10];
+
     public int sprogram;
-    public int[] shadowimg = new int[1];
     public int shadowMapResolution = 4000;
     private FloatBuffer vertexbuf;
     public boolean shadowpass = false;
 
-    public mat4 shadowProj = new mat4();
-    public mat4 shadowTrans = new mat4();
-    public mat4 shadowxrot = new mat4();
-    public mat4 shadowyrot = new mat4();
+    public mat40 shadowProj = new mat40();
+    public mat40 shadowTrans = new mat40();
+    public mat40 shadowxrot = new mat40();
+    public mat40 shadowyrot = new mat40();
 
     private int positionHandle;
     public int[] frstpassfrm = new int[1];
@@ -168,11 +169,11 @@ public class Engine {
         GLES32.glDrawBuffers(1, IntBuffer.wrap(frdrw));
         GLES32.glBindFramebuffer(GLES32.GL_FRAMEBUFFER, 0);
     }
-    private void setupShadowMapping(){
-        GLES32.glBindFramebuffer(GLES32.GL_FRAMEBUFFER, sFrm[0]);
+    private void setupShadowMapping(int sFrm, int shadowimg){
+        GLES32.glBindFramebuffer(GLES32.GL_FRAMEBUFFER, sFrm);
         GLES32.glEnable(GLES32.GL_DEPTH_TEST);
 
-        GLES32.glBindTexture(GLES32.GL_TEXTURE_2D, shadowimg[0]);
+        GLES32.glBindTexture(GLES32.GL_TEXTURE_2D, shadowimg);
         GLES32.glTexImage2D(GLES32.GL_TEXTURE_2D, 0, GLES32.GL_DEPTH_COMPONENT32F, shadowMapResolution, shadowMapResolution, 0, GLES32.GL_DEPTH_COMPONENT, GLES32.GL_FLOAT, null);
         GLES32.glTexParameteri(GLES32.GL_TEXTURE_2D, GLES32.GL_TEXTURE_MIN_FILTER, GLES32.GL_NEAREST);
         GLES32.glTexParameteri(GLES32.GL_TEXTURE_2D, GLES32.GL_TEXTURE_MAG_FILTER, GLES32.GL_NEAREST);
@@ -182,7 +183,7 @@ public class Engine {
         GLES32.glTexParameteri(GLES32.GL_TEXTURE_2D, GLES32.GL_TEXTURE_WRAP_T, GLES32.GL_CLAMP_TO_BORDER);
         GLES32.glBindTexture(GLES32.GL_TEXTURE_2D, 0);
 
-        GLES32.glFramebufferTexture(GLES32.GL_FRAMEBUFFER, GLES32.GL_DEPTH_ATTACHMENT, shadowimg[0], 0);
+        GLES32.glFramebufferTexture(GLES32.GL_FRAMEBUFFER, GLES32.GL_DEPTH_ATTACHMENT, shadowimg, 0);
 
         int[] frdrw = {0};
         GLES32.glDrawBuffers(1, IntBuffer.wrap(frdrw));
@@ -225,10 +226,11 @@ public class Engine {
         GLES32.glGenTextures(1, frstpassdtex, 0);
         setupRPass();
 
-        GLES32.glGenFramebuffers(1, sFrm, 0);
-        GLES32.glGenTextures(1, shadowimg, 0);
-
-        setupShadowMapping();
+        GLES32.glGenFramebuffers(10, sFrm, 0);
+        GLES32.glGenTextures(10, shadowimg, 0);
+        for(int i = 0; i!= 10; i++) {
+            setupShadowMapping(sFrm[i], shadowimg[i]);
+        }
     }
     public void setLight(int n, vec3 position, vec3 color, int lightState) {
         int selected = 0;
@@ -275,9 +277,9 @@ public class Engine {
         lightColors[selected+2] = color.z;
         usedLights[n-1] = lightState;
     }
-    public void beginShadowPass(){
+    public void beginShadowPass(int cnt){
         shadowpass = true;
-        GLES32.glBindFramebuffer(GLES32.GL_FRAMEBUFFER, sFrm[0]);
+        GLES32.glBindFramebuffer(GLES32.GL_FRAMEBUFFER, sFrm[cnt]);
         GLES32.glClear(GLES32.GL_COLOR_BUFFER_BIT | GLES32.GL_DEPTH_BUFFER_BIT);
         GLES32.glViewport(0, 0, shadowMapResolution, shadowMapResolution);
         GLES32.glUseProgram(sprogram);

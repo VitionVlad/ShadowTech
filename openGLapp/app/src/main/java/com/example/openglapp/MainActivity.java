@@ -39,10 +39,10 @@ class render implements GLSurfaceView.Renderer {
                     "uniform mat4 yrot;" +
                     "uniform mat4 meshm;" +
 
-                    "uniform mat4 sproj;" +
-                    "uniform mat4 stranslate;" +
-                    "uniform mat4 sxrot;" +
-                    "uniform mat4 syrot;" +
+                            "uniform mat4 sproj[10];" +
+                            "uniform mat4 stranslate[10];" +
+                            "uniform mat4 sxrot[10];" +
+                            "uniform mat4 syrot[10];" +
 
                     "out vec2 fuv;"+
                     "out vec3 fnormals;"+
@@ -54,7 +54,7 @@ class render implements GLSurfaceView.Renderer {
                             "fuv = uv;"+
                             "fnormals = mat3(transpose(inverse(mat4(1.0f)))) * normals;"+
                             "fpos = vec3(mat4(1.0f) * vec4(positions, 1.0f));"+
-                            "projlightmat = sproj * sxrot * syrot * stranslate * meshm * vec4(positions, 1.0f);"+
+                            "projlightmat = sproj[0] * sxrot[0] * syrot[0] * stranslate[0] * meshm * vec4(positions, 1.0f);"+
                     "}";
 
     private final String fragmentShaderCode =
@@ -62,7 +62,7 @@ class render implements GLSurfaceView.Renderer {
                     "precision mediump float;" +
                     "uniform sampler2D tex1;"+
                     "uniform sampler2D spec1;"+
-                    "uniform sampler2D shadowMap;"+
+                    "uniform sampler2D shadowMap2;"+
                     "uniform vec3 lightsPos[10];"+
                     "uniform vec3 lightsCol[10];"+
                     "uniform int lightStates[10];"+
@@ -77,7 +77,7 @@ class render implements GLSurfaceView.Renderer {
                     "  float shadow = 0.0f;" +
                     "  if(projected.z <= 1.0f){" +
                     "   projected = (projected + 1.0f)/2.0f;" +
-                    "   float closestDepth = texture(shadowMap, projected.xy).r;" +
+                    "   float closestDepth = texture(shadowMap2, projected.xy).r;" +
                     "   float currentDepth = projected.z;" +
                     "   if(currentDepth - 0.001 > closestDepth){" +
                     "       shadow+=1.0f;" +
@@ -110,14 +110,14 @@ class render implements GLSurfaceView.Renderer {
                     "precision mediump float;" +
                     "uniform sampler2D tex1;"+
                     "uniform sampler2D spec1;"+
-                    "uniform sampler2D shadowMap;"+
+                    "uniform sampler2D shadowMap2;"+
                     "uniform vec3 lightsPos[10];"+
                     "in vec4 projlightmat;"+
                     "in vec2 fuv;"+
                     "in vec3 fnormals;"+
                     "layout(location = 0) out vec4 color;"+
                     "void main() {" +
-                    "  color = vec4(texture(shadowMap, fuv).rrr, 1.0);" +
+                    "  color = vec4(texture(shadowMap2, fuv).rrr, 1.0);" +
                     "}";
 
     Engine eng = new Engine();
@@ -129,11 +129,11 @@ class render implements GLSurfaceView.Renderer {
     @Override
     public void onSurfaceCreated(GL10 gl10, EGLConfig eglConfig) {
         eng.Init();
-        eng.shadowProj.buildperspectivemat(90, 0.1f, 100, 1);
+        eng.shadowProj.buildperspectivemat(90, 0.1f, 100, 1, 0);
         //eng.shadowProj.buildorthomat(1, -1, 1, -1, 0.1f, 100f);
-        eng.shadowTrans.buildtranslatemat(new vec3(0, 0, -1));
-        eng.shadowxrot.buildxrotmat(-0.2f);
-        eng.shadowyrot.buildyrotmat(0);
+        eng.shadowTrans.buildtranslatemat(new vec3(0, 0, -1), 0);
+        eng.shadowxrot.buildxrotmat(-0.2f, 0);
+        eng.shadowyrot.buildyrotmat(0, 0);
         eng.setLight(1, new vec3(0, 1, 2f), new vec3(1, 1, 0.5f), 1);
 
         triangle.vertexes = new cube_model().verts;
@@ -173,7 +173,7 @@ class render implements GLSurfaceView.Renderer {
 
     @Override
     public void onDrawFrame(GL10 gl10) {
-        eng.beginShadowPass();
+        eng.beginShadowPass(1);
 
         triangle.Draw(eng);
         plane.Draw(eng);
