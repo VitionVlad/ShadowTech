@@ -26,8 +26,9 @@ class Engine{
                     "uniform mat4 sxrot[10];" 
                     "uniform mat4 syrot[10];" 
                     "uniform mat4 meshm;" 
+                    "uniform int sCnt;" 
                     "void main() {" 
-                    "  gl_Position = sproj[0] * sxrot[0] * syrot[0] * meshm * stranslate[0] * vec4(positions, 1.0f);" 
+                    "  gl_Position = sproj[sCnt] * sxrot[sCnt] * syrot[sCnt] * meshm * stranslate[sCnt] * vec4(positions, 1.0f);" 
                     "}";
 
     const char* shadowFragment =
@@ -343,6 +344,7 @@ class Engine{
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glViewport(0, 0, shadowMapResolution, shadowMapResolution);
         glUseProgram(sprogram);
+        glUniform1i(glGetUniformLocation(sprogram, "sCnt"), cnt);
     }
     void beginMainPass()
     {
