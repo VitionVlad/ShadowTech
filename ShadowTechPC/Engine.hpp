@@ -282,50 +282,14 @@ class Engine{
     }
     void setLight(int n, vec3 position, vec3 color, int lightState)
     {
-        int selected = 0;
-        switch (n)
-        {
-        case 1:
-            selected = 0;
-            break;
-        case 2:
-            selected = 3;
-            break;
-        case 3:
-            selected = 6;
-            break;
-        case 4:
-            selected = 9;
-            break;
-        case 5:
-            selected = 12;
-            break;
-        case 6:
-            selected = 15;
-            break;
-        case 7:
-            selected = 18;
-            break;
-        case 8:
-            selected = 21;
-            break;
-        case 9:
-            selected = 24;
-            break;
-        case 10:
-            selected = 27;
-            break;
-        default:
-            printf("Engine-error: not available such light source!\n");
-            break;
-        }
+        int selected = n*3;
         lightPositions[selected] = position.x;
         lightPositions[selected + 1] = position.y;
         lightPositions[selected + 2] = position.z;
         lightColors[selected] = color.x;
         lightColors[selected + 1] = color.y;
         lightColors[selected + 2] = color.z;
-        usedLights[n - 1] = lightState;
+        usedLights[n] = lightState;
     }
     void copyFloatArray(float tocop[16383], float dest[16383]){
         for(int i = 0; i != 16383; i++){
