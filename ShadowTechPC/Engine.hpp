@@ -10,9 +10,7 @@
 
 #include "mat40.hpp"
 
-#include "vec2.hpp"
-
-#include "ivec2.hpp"
+#include "clickZone.hpp"
 
 using namespace std;
 

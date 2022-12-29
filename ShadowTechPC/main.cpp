@@ -107,6 +107,8 @@ Engine eng;
 
 float speed = 0.05;
 
+bool mousefocused = true;
+
 void movecallback(){
     int state = glfwGetKey(eng.window, GLFW_KEY_W);
     if (state == GLFW_PRESS){ //w
@@ -127,6 +129,17 @@ void movecallback(){
     if (state == GLFW_PRESS){ //d
         eng.pos.x -= cos(eng.rot.y) * cos(eng.rot.x) * speed;
         eng.pos.z += cos(eng.rot.y) * sin(eng.rot.x) * -speed;
+    }
+    state = glfwGetKey(eng.window, GLFW_KEY_F11);
+    if (state == GLFW_PRESS){ //d
+        switch(mousefocused){
+            case false:
+            mousefocused = true;
+            break;
+            case true:
+            mousefocused = false;
+            break;
+        }
     }
 }
 
@@ -198,12 +211,16 @@ int main(){
 
     vec2 mousepos;
 
-    glfwSetInputMode(eng.window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-
     while (!glfwWindowShouldClose(eng.window)){
-        glfwGetCursorPos(eng.window, &mousepos.x, &mousepos.y);
-        eng.rot.x = mousepos.x/eng.resolution.x;
-        eng.rot.y = -mousepos.y/eng.resolution.y;
+        if(mousefocused == true){
+            glfwSetInputMode(eng.window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+            glfwGetCursorPos(eng.window, &mousepos.x, &mousepos.y);
+            eng.rot.x = mousepos.x/eng.resolution.x;
+            eng.rot.y = -mousepos.y/eng.resolution.y;
+        }else{
+            glfwSetInputMode(eng.window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+            glfwGetCursorPos(eng.window, &mousepos.x, &mousepos.y);
+        }
 
         eng.beginShadowPass(0);
 
@@ -216,7 +233,6 @@ int main(){
         eng.beginMainPass();
 
         movecallback();
-
         triangleProp.MeshMeshInteract(triangle, plane);
         triangleProp.MeshMeshInteract(triangle2, plane);
         triangle.Draw(eng);
