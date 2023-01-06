@@ -26,7 +26,7 @@ class Engine{
                     "uniform mat4 meshm;" 
                     "uniform int sCnt;" 
                     "void main() {" 
-                    "  gl_Position = sproj[sCnt] * sxrot[sCnt] * syrot[sCnt] * meshm * stranslate[sCnt] * vec4(positions, 1.0f);" 
+                    "  gl_Position = sproj[sCnt] * sxrot[sCnt] * syrot[sCnt] * meshm * stranslate[sCnt] * vec4(positions.x, -positions.y, positions.z, 1.0f);" 
                     "}";
 
     const char* shadowFragment =
@@ -142,16 +142,21 @@ class Engine{
 
     GLFWwindow* window;
 
+    bool isPlayerInteracting = false;
+
     static bool between(float x, float n1, float n2){
         return x >= n1 && x <= n2;
     }
     void aabbPlayer(vec3 meshPos, vec3 meshBorder){
         if (between(-pos.x, meshPos.x - meshBorder.x - camsize.x, meshPos.x + meshBorder.x + camsize.x) && between(-pos.y, meshPos.y - meshBorder.y, meshBorder.y + meshPos.y + camsize.y) && between(-pos.z, meshPos.z - meshBorder.z - camsize.z, meshBorder.z + meshPos.z + camsize.z)){
             pos.y = lastPos.y;
+            isPlayerInteracting = true;
             if (between(-pos.y, meshPos.y - meshBorder.y, meshBorder.y + meshPos.y + camsize.y / 2)){
                 pos.x = lastPos.x;
                 pos.z = lastPos.z;
             }
+        }else{
+            isPlayerInteracting = false;
         }
     }
     void setupRPass(){
@@ -312,7 +317,7 @@ class Engine{
     {
         glfwGetFramebufferSize(window, &resolution.x, &resolution.y);
         if(enablePhysics == true){
-            pos.y += 0.01f;
+            pos.y += 0.05f;
         }
         shadowpass = false;
         passRes = resolution;
