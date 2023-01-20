@@ -28,6 +28,9 @@ const char* vertexShaderCode =
                     "uniform mat4 xrot;" 
                     "uniform mat4 yrot;" 
                     "uniform mat4 meshm;" 
+                    "uniform mat4 meshx;" 
+                    "uniform mat4 meshy;" 
+                    "uniform mat4 meshz;" 
 
                     "uniform mat4 sproj[10];" 
                     "uniform mat4 stranslate[10];" 
@@ -39,11 +42,12 @@ const char* vertexShaderCode =
                     "out vec3 fpos;"
                     "out vec4 projlightmat;"
                     "void main() {" 
-                    "  gl_Position = proj * xrot * yrot * translate * meshm * vec4(positions, 1.0f);" 
+                    "  vec4 tr = meshm * meshx * meshy * meshz * vec4(positions, 1.0f);" 
+                    "  gl_Position = proj * xrot * yrot * translate * tr;" 
                             "fuv = uv;"
                             "fnormals = mat3(transpose(inverse(mat4(1.0f)))) * normals;"
                             "fpos = vec3(mat4(1.0f) * vec4(positions, 1.0f));"
-                            "projlightmat = sproj[0] * sxrot[0] * syrot[0] * stranslate[0] * meshm * vec4(positions, 1.0f);"
+                            "projlightmat = sproj[0] * sxrot[0] * syrot[0] * stranslate[0] * tr;"
                     "}";
 
 const char* fragmentShaderCode =
@@ -210,6 +214,8 @@ int main(){
     Prop triangleProp;
 
     vec2 mousepos;
+
+    triangle.meshRot.y = 0.5;
 
     while (!glfwWindowShouldClose(eng.window)){
         if(mousefocused == true){

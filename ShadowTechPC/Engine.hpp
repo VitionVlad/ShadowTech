@@ -24,9 +24,13 @@ class Engine{
                     "uniform mat4 sxrot[10];" 
                     "uniform mat4 syrot[10];" 
                     "uniform mat4 meshm;" 
+                    "uniform mat4 meshx;" 
+                    "uniform mat4 meshy;" 
+                    "uniform mat4 meshz;" 
                     "uniform int sCnt;" 
                     "void main() {" 
-                    "  gl_Position = sproj[sCnt] * sxrot[sCnt] * syrot[sCnt] * meshm * stranslate[sCnt] * vec4(positions.x, -positions.y, positions.z, 1.0f);" 
+                    "  vec4 tr = meshm * meshx * meshy * meshz * vec4(positions, 1.0f);" 
+                    "  gl_Position = sproj[0] * sxrot[0] * syrot[0] * stranslate[0] * tr;" 
                     "}";
 
     const char* shadowFragment =

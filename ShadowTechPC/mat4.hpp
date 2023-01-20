@@ -37,6 +37,14 @@ class mat4 {
         mat[10] = (float) cos(angle);
         mat[15] = 1;
     }
+    void buildzrotmat(float angle){
+        mat[0] = (float) cos(angle);
+        mat[5] = (float) cos(angle);
+        mat[4] = (float) sin(angle);
+        mat[1] = (float) -sin(angle);
+        mat[10] = 1;
+        mat[15] = 1;
+    }
     void buildperspectivemat(float fov, float zNear, float zFar, float aspect){
         float S = (float) tan((fov/2)*(M_PI/180));
         mat[0] = 1/(aspect*S);

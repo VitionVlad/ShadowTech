@@ -26,6 +26,8 @@ class Mesh {
     GLuint albedoHandle;
     GLuint specularHandle;
     vec3 meshPosition;
+    vec3 meshRot;
+    mat4 rotMat[3];
     mat4 meshMatrix;
     vec3 aabb;
 
@@ -37,16 +39,36 @@ class Mesh {
 
     bool enablePLayerInteract = true;
 
+    void vecmatmult(vec3& vec, mat4 mat){
+        vec3 tof;
+        tof.x = vec.x * mat.mat[0] + vec.y * mat.mat[4] + vec.z * mat.mat[8] + mat.mat[12];
+        tof.y = vec.x * mat.mat[1] + vec.y * mat.mat[5] + vec.z * mat.mat[9] + mat.mat[13];
+        tof.z = vec.x * mat.mat[2] + vec.y * mat.mat[6] + vec.z * mat.mat[10] + mat.mat[14];
+        float w = mat.mat[3] + mat.mat[7] +  mat.mat[11] +  mat.mat[15];
+        tof.x /= w;
+        tof.y /= w;
+        tof.z /= w;
+        vec.x = tof.x;
+        vec.y = tof.y;
+        vec.z = tof.z;
+    }
     void CalcAABB(){
-        for(int i = 0; i!= 16383; i+=3){
-            if(abs(vertexes[i]) >= aabb.x ){
-                aabb.x = abs(vertexes[i]);
+        for(int i = 0; i!= totalv*3; i+=3){
+            vec3 ver;
+            ver.x = vertexes[i];
+            ver.y = vertexes[i+1];
+            ver.z = vertexes[i+2];
+            vecmatmult(ver, rotMat[0]);
+            vecmatmult(ver, rotMat[1]);
+            vecmatmult(ver, rotMat[2]);
+            if(abs(ver.x) >= aabb.x ){
+                aabb.x = abs(ver.x);
             }
-            if(abs(vertexes[i+1]) >= aabb.y ){
-                aabb.y = abs(vertexes[i+1]);
+            if(abs(ver.y) >= aabb.y ){
+                aabb.y = abs(ver.y);
             }
-            if(abs(vertexes[i+2]) >= aabb.z ){
-                aabb.z = abs(vertexes[i+2]);
+            if(abs(ver.z) >= aabb.z ){
+                aabb.z = abs(ver.z);
             }
         }
     }
@@ -119,6 +141,10 @@ class Mesh {
         CalcAABB();
     }
     void Draw(Engine& handle){
+        rotMat[0].buildxrotmat(meshRot.x);
+        rotMat[1].buildyrotmat(meshRot.y);
+        rotMat[2].buildzrotmat(meshRot.z);
+        CalcAABB();
         if(handle.shadowpass == false){
             if(handle.enablePhysics == true && enablePLayerInteract == true){
                 handle.aabbPlayer(meshPosition, aabb);
@@ -168,6 +194,9 @@ class Mesh {
             glUniformMatrix4fv(glGetUniformLocation(program, "xrot"), 1, false, handle.xrot.mat);
             glUniformMatrix4fv(glGetUniformLocation(program, "yrot"), 1, false, handle.yrot.mat);
             glUniformMatrix4fv(glGetUniformLocation(program, "meshm"), 1, false, meshMatrix.mat);
+            glUniformMatrix4fv(glGetUniformLocation(program, "meshx"), 1, false, rotMat[0].mat);
+            glUniformMatrix4fv(glGetUniformLocation(program, "meshy"), 1, false, rotMat[1].mat);
+            glUniformMatrix4fv(glGetUniformLocation(program, "meshz"), 1, false, rotMat[2].mat);
             glUniform1iv(glGetUniformLocation(program, "lightStates"), 10, handle.usedLights);
 
             glUniformMatrix4fv(glGetUniformLocation(program, "sproj"), 10, false, handle.shadowProj.mat);
@@ -189,6 +218,9 @@ class Mesh {
             glUniformMatrix4fv(glGetUniformLocation(handle.sprogram, "sxrot"), 10, false, handle.shadowxrot.mat);
             glUniformMatrix4fv(glGetUniformLocation(handle.sprogram, "syrot"), 10, false, handle.shadowyrot.mat);
             glUniformMatrix4fv(glGetUniformLocation(handle.sprogram, "meshm"), 1, false, meshMatrix.mat);
+            glUniformMatrix4fv(glGetUniformLocation(program, "meshx"), 1, false, rotMat[0].mat);
+            glUniformMatrix4fv(glGetUniformLocation(program, "meshy"), 1, false, rotMat[1].mat);
+            glUniformMatrix4fv(glGetUniformLocation(program, "meshz"), 1, false, rotMat[2].mat);
         }
 
         glDrawArrays(GL_TRIANGLES, 0, totalv);
