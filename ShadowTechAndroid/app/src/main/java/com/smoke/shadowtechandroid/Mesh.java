@@ -52,7 +52,9 @@ public class Mesh {
         tof.x /= w;
         tof.y /= w;
         tof.z /= w;
-        vec = tof;
+        vec.x = tof.x;
+        vec.y = tof.y;
+        vec.z = tof.z;
     }
     private void CalcAABB(){
         for(int i = 0; i!= vertexes.length; i+=3){
