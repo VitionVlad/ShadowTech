@@ -1,13 +1,8 @@
 # ShadowTech
 simple game engine
 new render features! render to texture, texture mapping, shadow maps.  
-![Screenshot_20221225-182209_openGLapp](https://user-images.githubusercontent.com/48290199/209475396-27238d46-f6f9-4fd1-9f08-171b0f7dcee9.png)
-![Screenshot_20221225-182223_openGLapp](https://user-images.githubusercontent.com/48290199/209475398-bf0ffea3-8e0f-4fca-b89d-6317aef28ce2.png)  
-meet the pc version!  
-![Снимок экрана от 2022-12-28 11-16-00](https://user-images.githubusercontent.com/48290199/209788714-9377104c-0606-431d-aa5f-ce482ee42b47.png)  
-it is very important for colision, input should be gain only when main pass begin, otherwise it will not work correctly  
-works even on windows!  
-![Screenshot (4)](https://user-images.githubusercontent.com/48290199/209863475-9bf1b365-e0d3-44fa-9392-1fc5e5e1ed3e.png)
+![Снимок экрана от 2023-01-21 21-03-32](https://user-images.githubusercontent.com/48290199/213883006-2c82a882-b542-403d-8c52-8d0677cc40ed.png)
+![Screenshot_20230121-210103](https://user-images.githubusercontent.com/48290199/213883010-0e0be5b3-ea5a-4b8c-b1cf-d5befa91ab16.png)
 # objtoClass  
 this is a simple tool to convert obj file to java file, ready for use, works really simple.
 # ppmtoClass  
