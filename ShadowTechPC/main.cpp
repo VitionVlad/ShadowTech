@@ -120,18 +120,15 @@ const char* vertexuiShaderCode =
                     "uniform mat4 xrot;" 
                     "uniform mat4 yrot;" 
                     "uniform mat4 meshm;" 
-
-                    "uniform mat4 sproj[10];" 
-                    "uniform mat4 stranslate[10];" 
-                    "uniform mat4 sxrot[10];" 
-                    "uniform mat4 syrot[10];" 
+                    "uniform mat4 meshs;"  
 
                     "out vec2 fuv;"
                     "out vec3 fnormals;"
                     "out vec3 fpos;"
                     "out vec4 projlightmat;"
                     "void main() {" 
-                    "  gl_Position = uiproj * vec4(positions, 1.0f);" 
+                    "  vec4 tr = meshm * meshs * vec4(positions.xy, 1, 1.0f);" 
+                    "  gl_Position = tr * uiproj;" 
                             "fuv = vec2(uv.x, uv.y);"
                     "}";
 
@@ -214,7 +211,7 @@ int main(){
     triangle.texResolution.y = cube_texture().resy;
     triangle.meshPosition.z = -1.5f;
     triangle.meshPosition.y = 5;
-    triangle.initMesh(fragmentShaderCode, vertexShaderCode, eng);
+    triangle.initMesh(fragmentShaderCode, vertexShaderCode);
 
     Mesh triangle2;
 
@@ -229,7 +226,7 @@ int main(){
     triangle2.meshPosition.z = -1.5f;
     triangle2.meshPosition.y = 5;
     triangle2.meshPosition.x = 2.5f;
-    triangle2.initMesh(fragmentShaderCode, vertexShaderCode, eng);
+    triangle2.initMesh(fragmentShaderCode, vertexShaderCode);
 
     Mesh plane;
 
@@ -242,7 +239,7 @@ int main(){
     plane.texResolution.x = cube_texture().resx;
     plane.texResolution.y = cube_texture().resy;
     plane.meshPosition.y = -0.5f;
-    plane.initMesh(fragmentShaderCode, vertexShaderCode, eng);
+    plane.initMesh(fragmentShaderCode, vertexShaderCode);
 
     Mesh monitor;
 
@@ -255,7 +252,8 @@ int main(){
     monitor.texResolution.x = cube_texture().resx;
     monitor.texResolution.y = cube_texture().resy;
     monitor.meshPosition = vec3(-1.5f, 0.5f, 1.5f);
-    monitor.initMesh(fragmentShaderCode2, vertexShaderCode, eng);
+    monitor.meshScale.y = 2;
+    monitor.initMesh(fragmentShaderCode2, vertexShaderCode);
 
     Prop triangleProp;
 
@@ -265,29 +263,8 @@ int main(){
     triangle.meshScale.y = 1.5;
 
     Mesh scr;
-    scr.vertexes[0] = 1;
-    scr.vertexes[1] = 0;
-    scr.vertexes[2] = 0.5;
-    scr.vertexes[3] = 0;
-    scr.vertexes[4] = 0;
-    scr.vertexes[5] = 0.5;
-    scr.vertexes[6] = 0;
-    scr.vertexes[7] = 1;
-    scr.vertexes[8] = 0.5;
-    scr.totalv = 3;
-
-    scr.uv[0] = 1;
-    scr.uv[1] = 0;
-    scr.uv[3] = 0;
-    scr.uv[4] = 0;
-    scr.uv[6] = 0;
-    scr.uv[7] = 1;
-
-    eng.copyucharArray(cube_texture().pixels, scr.texture);
-    scr.texResolution.x = cube_texture().resx;
-    scr.texResolution.y = cube_texture().resy;
-
-    scr.initMesh(fragmentuiShaderCode, vertexuiShaderCode, eng);
+    scr.meshPosition.x = -1;
+    scr.makeQuad(fragmentuiShaderCode, vertexuiShaderCode, eng, cube_texture().pixels, cube_texture().resx, cube_texture().resy);
 
     while (!glfwWindowShouldClose(eng.window)){
         if(mousefocused == true){

@@ -75,7 +75,7 @@ class Mesh {
             }
         }
     }
-    void initMesh(const char* fshader, const char* vshader, Engine handle){
+    void initMesh(const char* fshader, const char* vshader){
         glGenVertexArrays(1, &VAO);
 
         glGenBuffers(1, &VBO);
@@ -142,6 +142,44 @@ class Mesh {
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
         glBindTexture(GL_TEXTURE_2D, 0);
         CalcAABB();
+    }
+    void makeQuad(const char* fshader, const char* vshader, Engine handle, unsigned char tex[65535], int tx, int ty){
+        vertexes[0] = -1;
+        vertexes[1] = 0.9;
+        vertexes[2] = 1;
+        vertexes[3] = -1;
+        vertexes[4] = 1;
+        vertexes[5] = 1;
+        vertexes[6] = -0.9;
+        vertexes[7] = 1;
+        vertexes[8] = 1;
+        vertexes[9] = -1;
+        vertexes[10] = 0.9;
+        vertexes[11] = 1;
+        vertexes[12] = -0.9;
+        vertexes[13] = 1;
+        vertexes[14] = 1;
+        vertexes[15] = -0.9;
+        vertexes[16] = 0.9;
+        vertexes[17] = 1;
+        totalv = 6;
+        uv[0] = 0;
+        uv[1] = 1;
+        uv[2] = 0;
+        uv[3] = 0;
+        uv[4] = 1;
+        uv[5] = 0;
+        uv[6] = 0;
+        uv[7] = 1;
+        uv[8] = 1;
+        uv[9] = 0;
+        uv[10] = 1;
+        uv[11] = 1;
+        enablePLayerInteract = false;
+        handle.copyucharArray(tex, texture);
+        texResolution.x = tx;
+        texResolution.y = ty;
+        initMesh(fshader, vshader);
     }
     void Draw(Engine& handle){
         rotMat[0].buildxrotmat(meshRot.x);

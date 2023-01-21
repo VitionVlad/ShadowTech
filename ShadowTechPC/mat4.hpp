@@ -63,13 +63,15 @@ class mat4 {
         mat[11] = (zFar+zNear)/(zFar-zNear);
     }
     void builduimat(float r, float t, float zNear, float zFar, float aspect){
-        float lr = r * aspect;
-        mat[0] = 2/(lr);
-        mat[5] = 2/(lr);
+        float lr = aspect*r;
+        float l = -r;
+        float b = -t;
+        mat[0] = 2/(lr-l);
+        mat[5] = 2/(lr-l);
         mat[10] = -2/(zFar-zNear);
         mat[15] = 1;
-        mat[3] = (lr+lr)/(lr);
-        mat[7] = (t)/(t);
+        mat[3] = (lr+r)/(lr-l);
+        mat[7] = (t+b)/(t-b);
         mat[11] = (zFar+zNear)/(zFar-zNear);
     }
     void buildIdentityMat(){
