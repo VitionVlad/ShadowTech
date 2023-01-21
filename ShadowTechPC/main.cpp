@@ -31,6 +31,7 @@ const char* vertexShaderCode =
                     "uniform mat4 meshx;" 
                     "uniform mat4 meshy;" 
                     "uniform mat4 meshz;" 
+                    "uniform mat4 meshs;" 
 
                     "uniform mat4 sproj[10];" 
                     "uniform mat4 stranslate[10];" 
@@ -42,7 +43,8 @@ const char* vertexShaderCode =
                     "out vec3 fpos;"
                     "out vec4 projlightmat;"
                     "void main() {" 
-                    "  vec4 tr = meshm * meshx * meshy * meshz * vec4(positions, 1.0f);" 
+                    "  vec4 tr = meshs * vec4(positions, 1.0f);" 
+                    "  tr = meshm * meshx * meshy * meshz * tr;" 
                     "  gl_Position = proj * xrot * yrot * translate * tr;" 
                             "fuv = uv;"
                             "fnormals = mat3(transpose(inverse(mat4(1.0f)))) * normals;"
@@ -260,6 +262,7 @@ int main(){
     vec2 mousepos;
 
     triangle.meshRot.y = 0.5;
+    triangle.meshScale.y = 1.5;
 
     Mesh scr;
     scr.vertexes[0] = 1;

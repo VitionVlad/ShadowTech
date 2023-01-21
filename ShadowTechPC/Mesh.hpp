@@ -26,7 +26,9 @@ class Mesh {
     GLuint albedoHandle;
     GLuint specularHandle;
     vec3 meshPosition;
-    vec3 meshRot;
+    vec3 meshRot = vec3();
+    vec3 meshScale = vec3(1, 1, 1);
+    mat4 scaleMat;
     mat4 rotMat[3];
     mat4 meshMatrix;
     vec3 aabb;
@@ -61,6 +63,7 @@ class Mesh {
             vecmatmult(ver, rotMat[0]);
             vecmatmult(ver, rotMat[1]);
             vecmatmult(ver, rotMat[2]);
+            vecmatmult(ver, scaleMat);
             if(abs(ver.x) >= aabb.x ){
                 aabb.x = abs(ver.x);
             }
@@ -144,6 +147,7 @@ class Mesh {
         rotMat[0].buildxrotmat(meshRot.x);
         rotMat[1].buildyrotmat(meshRot.y);
         rotMat[2].buildzrotmat(meshRot.z);
+        scaleMat.buildScaleMat(meshScale);
         CalcAABB();
         if(handle.shadowpass == false){
             if(handle.enablePhysics == true && enablePLayerInteract == true){
@@ -198,6 +202,7 @@ class Mesh {
             glUniformMatrix4fv(glGetUniformLocation(program, "meshx"), 1, false, rotMat[0].mat);
             glUniformMatrix4fv(glGetUniformLocation(program, "meshy"), 1, false, rotMat[1].mat);
             glUniformMatrix4fv(glGetUniformLocation(program, "meshz"), 1, false, rotMat[2].mat);
+            glUniformMatrix4fv(glGetUniformLocation(program, "meshs"), 1, false, scaleMat.mat);
             glUniform1iv(glGetUniformLocation(program, "lightStates"), 10, handle.usedLights);
 
             glUniformMatrix4fv(glGetUniformLocation(program, "sproj"), 10, false, handle.shadowProj.mat);
@@ -219,9 +224,10 @@ class Mesh {
             glUniformMatrix4fv(glGetUniformLocation(handle.sprogram, "sxrot"), 10, false, handle.shadowxrot.mat);
             glUniformMatrix4fv(glGetUniformLocation(handle.sprogram, "syrot"), 10, false, handle.shadowyrot.mat);
             glUniformMatrix4fv(glGetUniformLocation(handle.sprogram, "meshm"), 1, false, meshMatrix.mat);
-            glUniformMatrix4fv(glGetUniformLocation(program, "meshx"), 1, false, rotMat[0].mat);
-            glUniformMatrix4fv(glGetUniformLocation(program, "meshy"), 1, false, rotMat[1].mat);
-            glUniformMatrix4fv(glGetUniformLocation(program, "meshz"), 1, false, rotMat[2].mat);
+            glUniformMatrix4fv(glGetUniformLocation(handle.sprogram, "meshs"), 1, false, scaleMat.mat);
+            glUniformMatrix4fv(glGetUniformLocation(handle.sprogram, "meshx"), 1, false, rotMat[0].mat);
+            glUniformMatrix4fv(glGetUniformLocation(handle.sprogram, "meshy"), 1, false, rotMat[1].mat);
+            glUniformMatrix4fv(glGetUniformLocation(handle.sprogram, "meshz"), 1, false, rotMat[2].mat);
         }
 
         glDrawArrays(GL_TRIANGLES, 0, totalv);

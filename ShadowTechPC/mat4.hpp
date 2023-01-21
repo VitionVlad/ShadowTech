@@ -75,7 +75,13 @@ class mat4 {
     void buildIdentityMat(){
         mat[0] = 1;
         mat[5] = 1;
-        mat[10] = 10;
+        mat[10] = 1;
+        mat[15] = 1;
+    }
+    void buildScaleMat(vec3 scale){
+        mat[0] = scale.x;
+        mat[5] = scale.y;
+        mat[10] = scale.z;
         mat[15] = 1;
     }
 };

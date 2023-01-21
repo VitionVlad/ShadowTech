@@ -29,9 +29,11 @@ class Engine{
                     "uniform mat4 meshx;" 
                     "uniform mat4 meshy;" 
                     "uniform mat4 meshz;" 
+                    "uniform mat4 meshs;" 
                     "uniform int sCnt;" 
                     "void main() {" 
-                    "  vec4 tr = meshm * meshx * meshy * meshz * vec4(positions, 1.0f);" 
+                    "  vec4 tr = meshs * vec4(positions, 1.0f);" 
+                    "  tr = meshm * meshx * meshy * meshz * tr;" 
                     "  gl_Position = sproj[0] * sxrot[0] * syrot[0] * stranslate[0] * tr;" 
                     "}";
 
