@@ -4,6 +4,8 @@
 
 #include <string>
 
+#include <cstring>
+
 #include <GL/glew.h>
 
 #include <GLFW/glfw3.h>
@@ -299,14 +301,10 @@ class Engine{
         usedLights[n] = lightState;
     }
     void copyFloatArray(float tocop[16383], float dest[16383]){
-        for(int i = 0; i != 16383; i++){
-            dest[i] = tocop[i];
-        }
+        memcpy(dest, tocop, 16383);
     }
     void copyucharArray(unsigned char tocop[65535], unsigned char dest[65535]){
-        for(int i = 0; i != 65535; i++){
-            dest[i] = tocop[i];
-        }
+        memcpy(dest, tocop, 65535);
     }
     void beginShadowPass(int cnt)
     {
