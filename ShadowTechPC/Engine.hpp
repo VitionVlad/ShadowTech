@@ -149,24 +149,28 @@ class Engine{
 
     bool enablePhysics = true;
 
-    GLFWwindow* window;
+    bool enableColision = true;
 
-    bool isPlayerInteracting = false;
+    GLFWwindow* window;
 
     static bool between(float x, float n1, float n2){
         return x >= n1 && x <= n2;
     }
-    void aabbPlayer(vec3 meshPos, vec3 meshBorder){
+    bool aabbPlayer(vec3 meshPos, vec3 meshBorder, bool enableColision){
+        bool toreturn  = false;
         if (between(-pos.x, meshPos.x - meshBorder.x - camsize.x, meshPos.x + meshBorder.x + camsize.x) && between(-pos.y, meshPos.y - meshBorder.y, meshBorder.y + meshPos.y + camsize.y) && between(-pos.z, meshPos.z - meshBorder.z - camsize.z, meshBorder.z + meshPos.z + camsize.z)){
-            pos.y = lastPos.y;
-            isPlayerInteracting = true;
-            if (between(-pos.y, meshPos.y - meshBorder.y, meshBorder.y + meshPos.y + camsize.y / 2)){
-                pos.x = lastPos.x;
-                pos.z = lastPos.z;
+            if(enableColision == true){
+                pos.y = lastPos.y;
             }
-        }else{
-            isPlayerInteracting = false;
+            toreturn = true;
+            if (between(-pos.y, meshPos.y - meshBorder.y, meshBorder.y + meshPos.y + camsize.y / 2)){
+                if(enableColision == true){
+                    pos.x = lastPos.x;
+                    pos.z = lastPos.z;
+                }
+            }
         }
+        return toreturn;
     }
     void setupRPass(){
         glBindFramebuffer(GL_FRAMEBUFFER, frstpassfrm);

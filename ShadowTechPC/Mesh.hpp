@@ -41,6 +41,10 @@ class Mesh {
 
     bool enablePLayerInteract = true;
 
+    bool colision = true;
+
+    bool isinteracting = false;
+
     void vecmatmult(vec3& vec, mat4 mat){
         vec3 tof;
         tof.x = vec.x * mat.mat[0] + vec.y * mat.mat[4] + vec.z * mat.mat[8] + mat.mat[12];
@@ -188,8 +192,10 @@ class Mesh {
         scaleMat.buildScaleMat(meshScale);
         CalcAABB();
         if(handle.shadowpass == false){
-            if(handle.enablePhysics == true && enablePLayerInteract == true){
-                handle.aabbPlayer(meshPosition, aabb);
+            if(handle.enableColision == true && enablePLayerInteract == true){
+                isinteracting = handle.aabbPlayer(meshPosition, aabb, colision);
+            }else{
+                isinteracting = false;
             }
             glUseProgram(program);
 

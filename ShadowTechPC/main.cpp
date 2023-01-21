@@ -80,7 +80,7 @@ const char* fragmentShaderCode =
                     "  return shadow;" 
                     "}" 
                     "float phongl(vec3 lightpos){" 
-                    "  float ambient = 0.1;" 
+                    "  float ambient = 0.2;" 
                     "  vec3 norm = normalize(fnormals);" 
                     "  vec3 ldir = normalize(lightpos-fpos);" 
                     "  float diffuse = max(dot(norm, ldir), 0.0);" 
@@ -212,6 +212,7 @@ int main(){
     triangle.meshPosition.z = -1.5f;
     triangle.meshPosition.y = 5;
     triangle.initMesh(fragmentShaderCode, vertexShaderCode);
+    triangle.colision = false;
 
     Mesh triangle2;
 
