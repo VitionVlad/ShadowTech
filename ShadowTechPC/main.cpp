@@ -78,7 +78,7 @@ const char* fragmentShaderCode =
                     "  return shadow;" 
                     "}" 
                     "float phongl(vec3 lightpos){" 
-                    "  float ambient = 0.2;" 
+                    "  float ambient = 0.1;" 
                     "  vec3 norm = normalize(fnormals);" 
                     "  vec3 ldir = normalize(lightpos-fpos);" 
                     "  float diffuse = max(dot(norm, ldir), 0.0);" 
@@ -105,6 +105,50 @@ const char* fragmentShaderCode2 =
                     "layout(location = 0) out vec4 color;"
                     "void main() {" 
                     "  color = vec4(texture(shadowMap0, fuv).rrr, 1.0);" 
+                    "}";
+
+const char* vertexuiShaderCode =
+                    "#version 400\n"
+                    "layout (location = 0) in vec3 positions;" 
+                    "layout (location = 1) in vec3 normals;" 
+                    "layout (location = 2) in vec2 uv;" 
+                    "uniform mat4 proj;" 
+                    "uniform mat4 uiproj;" 
+                    "uniform mat4 translate;" 
+                    "uniform mat4 xrot;" 
+                    "uniform mat4 yrot;" 
+                    "uniform mat4 meshm;" 
+
+                    "uniform mat4 sproj[10];" 
+                    "uniform mat4 stranslate[10];" 
+                    "uniform mat4 sxrot[10];" 
+                    "uniform mat4 syrot[10];" 
+
+                    "out vec2 fuv;"
+                    "out vec3 fnormals;"
+                    "out vec3 fpos;"
+                    "out vec4 projlightmat;"
+                    "void main() {" 
+                    "  gl_Position = uiproj * vec4(positions, 1.0f);" 
+                            "fuv = vec2(uv.x, uv.y);"
+                    "}";
+
+const char* fragmentuiShaderCode =
+                    "#version 400\n" 
+                    "uniform sampler2D tex1;"
+                    "uniform sampler2D spec1;"
+                    "uniform sampler2D shadowMap0;"
+                    "uniform vec3 lightsPos[10];"
+                    "uniform vec3 lightsCol[10];"
+                    "uniform int lightStates[10];"
+                    "uniform vec3 viewPos;"
+                    "in vec4 projlightmat;"
+                    "in vec2 fuv;"
+                    "in vec3 fnormals;"
+                    "in vec3 fpos;"
+                    "layout(location = 0) out vec4 color;"
+                    "void main(){"
+                    "  color = vec4( texture(tex1, fuv).rgb, 1.0);" 
                     "}";
 
 Engine eng;
@@ -217,6 +261,31 @@ int main(){
 
     triangle.meshRot.y = 0.5;
 
+    Mesh scr;
+    scr.vertexes[0] = 1;
+    scr.vertexes[1] = 0;
+    scr.vertexes[2] = 0.5;
+    scr.vertexes[3] = 0;
+    scr.vertexes[4] = 0;
+    scr.vertexes[5] = 0.5;
+    scr.vertexes[6] = 0;
+    scr.vertexes[7] = 1;
+    scr.vertexes[8] = 0.5;
+    scr.totalv = 3;
+
+    scr.uv[0] = 1;
+    scr.uv[1] = 0;
+    scr.uv[3] = 0;
+    scr.uv[4] = 0;
+    scr.uv[6] = 0;
+    scr.uv[7] = 1;
+
+    eng.copyucharArray(cube_texture().pixels, scr.texture);
+    scr.texResolution.x = cube_texture().resx;
+    scr.texResolution.y = cube_texture().resy;
+
+    scr.initMesh(fragmentuiShaderCode, vertexuiShaderCode, eng);
+
     while (!glfwWindowShouldClose(eng.window)){
         if(mousefocused == true){
             glfwSetInputMode(eng.window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
@@ -239,6 +308,7 @@ int main(){
         eng.beginMainPass();
 
         movecallback();
+        scr.Draw(eng);
         triangleProp.MeshMeshInteract(triangle, plane);
         triangleProp.MeshMeshInteract(triangle2, plane);
         triangle.Draw(eng);

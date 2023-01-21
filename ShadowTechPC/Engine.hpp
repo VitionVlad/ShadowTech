@@ -117,6 +117,7 @@ class Engine{
     float speed = 0;
     bool allowmove = false;
     mat4 perspective = mat4();
+    mat4 uiMat;
     mat4 translate = mat4();
     mat4 xrot = mat4();
     mat4 yrot = mat4();
@@ -343,6 +344,7 @@ class Engine{
             }
         }
         perspective.buildperspectivemat(fov, 0.1f, 100, resolution.x / resolution.y);
+        uiMat.builduimat(1, 1, 0.1, 10, resolution.x/resolution.y);
         yrot.buildyrotmat(-rot.x);
         xrot.buildxrotmat(rot.y);
         translate.buildtranslatemat(pos);

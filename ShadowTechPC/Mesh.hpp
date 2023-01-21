@@ -190,6 +190,7 @@ class Mesh {
             meshMatrix.buildtranslatemat(meshPosition);
 
             glUniformMatrix4fv(glGetUniformLocation(program, "proj"), 1, false, handle.perspective.mat);
+            glUniformMatrix4fv(glGetUniformLocation(program, "uiproj"), 1, false, handle.uiMat.mat);
             glUniformMatrix4fv(glGetUniformLocation(program, "translate"), 1, false, handle.translate.mat);
             glUniformMatrix4fv(glGetUniformLocation(program, "xrot"), 1, false, handle.xrot.mat);
             glUniformMatrix4fv(glGetUniformLocation(program, "yrot"), 1, false, handle.yrot.mat);
