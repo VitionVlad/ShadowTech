@@ -59,15 +59,18 @@ class Mesh {
         vec.z = tof.z;
     }
     void CalcAABB(){
+        aabb.x = 0;
+        aabb.y = 0;
+        aabb.z = 0;
         for(int i = 0; i!= totalv*3; i+=3){
             vec3 ver;
             ver.x = vertexes[i];
             ver.y = vertexes[i+1];
             ver.z = vertexes[i+2];
+            vecmatmult(ver, scaleMat);
             vecmatmult(ver, rotMat[0]);
             vecmatmult(ver, rotMat[1]);
             vecmatmult(ver, rotMat[2]);
-            vecmatmult(ver, scaleMat);
             if(abs(ver.x) >= aabb.x ){
                 aabb.x = abs(ver.x);
             }
