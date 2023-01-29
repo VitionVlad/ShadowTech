@@ -131,6 +131,8 @@ class render implements GLSurfaceView.Renderer {
 
     Prop triangleProp = new Prop();
 
+    Context context;
+
     @Override
     public void onSurfaceCreated(GL10 gl10, EGLConfig eglConfig) {
         eng.Init();
@@ -148,8 +150,8 @@ class render implements GLSurfaceView.Renderer {
         triangle.specular = new specular_texture().pixels;
         triangle.meshPosition.z = -1.5f;
         triangle.meshPosition.y = 5;
-        //triangle.meshRot.x = 0.5f;
-        //triangle.meshScale.y = 1.5f;
+        triangle.meshRot.y = 0.5f;
+        triangle.meshScale.y = 1.5f;
         triangle.initMesh(fragmentShaderCode, vertexShaderCode);
 
         plane.vertexes = new plane_model().verts;
@@ -169,6 +171,8 @@ class render implements GLSurfaceView.Renderer {
         monitor.specular = new specular_texture().pixels;
         monitor.meshPosition = new vec3(-1.5f, 0.5f, 1.5f);
         monitor.initMesh(fragmentShaderCode2, vertexShaderCode);
+        audioSource aud = new audioSource(context,R.raw.audio);
+        aud.play();
     }
 
     @Override
@@ -222,6 +226,7 @@ class surface extends GLSurfaceView {
         setEGLContextClientVersion(2);
 
         renderer = new render();
+        renderer.context = context;
         setRenderer(renderer);
     }
 }
