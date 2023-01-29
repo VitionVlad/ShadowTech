@@ -190,8 +190,8 @@ void movecallback(){
     }
 }
 
-int main(){
-    eng.Init();
+int main(int argc, char **argv){
+    eng.Init(argc, argv);
     eng.shadowProj.buildperspectivemat(90, 0.1, 100, 1, 0);
     //eng.shadowProj.buildorthomat(1, -1, 1, -1, speedf, 100f);
     eng.shadowTrans.buildtranslatemat(vec3(0, 0, -1), 0);
@@ -267,6 +267,9 @@ int main(){
     scr.meshPosition.x = -1;
     scr.makeQuad(fragmentuiShaderCode, vertexuiShaderCode, eng, cube_texture().pixels, cube_texture().resx, cube_texture().resy);
 
+    audioSource aud("audio.wav");
+    aud.play();
+
     while (!glfwWindowShouldClose(eng.window)){
         if(mousefocused == true){
             glfwSetInputMode(eng.window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
@@ -299,5 +302,6 @@ int main(){
 
         eng.endFrame();
     }
+    alutExit();
     return 1;
 }

@@ -14,6 +14,8 @@
 
 #include "clickZone.hpp"
 
+#include "audio.hpp"
+
 using namespace std;
 
 class Engine{
@@ -38,6 +40,7 @@ class Engine{
                     "}";
 
     const char* shadowFragment =
+              
                     "#version 400\n" 
                     "void main() {" 
                     "}";
@@ -217,26 +220,26 @@ class Engine{
         glDrawBuffers(0, NULL);
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
     }
-    void Init(){
-        cout << "engine_init: engine started initializing" << endl;
+    void Init(int argc, char **argv){
+        cout << "engine_init:\u001b[36m engine started initializing\u001b[37m" << endl;
         glfwInit();
-        cout << "engine_init: glfw inited!" << endl;
+        cout << "engine_init:\u001b[36m glfw inited!\u001b[37m" << endl;
         glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
         glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
         glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-        cout << "engine_init: core profile 4.0!" << endl;
+        cout << "engine_init:\u001b[36m core profile 4.0!\u001b[37m" << endl;
         window = glfwCreateWindow(resolution.x, resolution.y, "ShadowTech/OpenGl 4.0/Linux", NULL, NULL);
-        cout << "engine_init: window created!" << endl;
+        cout << "engine_init:\u001b[36m window created!\u001b[37m" << endl;
         glfwMakeContextCurrent(window);
-        cout << "engine_init: context focused!" << endl;
+        cout << "engine_init:\u001b[36m context focused!\u001b[37m" << endl;
         glewExperimental = true;
         glewInit();
-        cout << "engine_init: glew inited" << endl;
+        cout << "engine_init:\u001b[36m glew inited\u001b[37m" << endl;
 
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         glEnable(GL_DEPTH_TEST);
 
-        cout << "engine_init: depth test enabled" << endl;
+        cout << "engine_init:\u001b[36m depth test enabled\u001b[37m" << endl;
 
         glGenBuffers(1, &surfhandle);
         glBindBuffer(GL_ARRAY_BUFFER, surfhandle); 
@@ -244,7 +247,7 @@ class Engine{
         glGenVertexArrays(1, &surfahandle);  
         glBindBuffer(GL_ARRAY_BUFFER, 0); 
 
-        cout << "engine_init: screen surface created" << endl;
+        cout << "engine_init:\u001b[36m screen surface created\u001b[37m" << endl;
 
         int fshaderprog = glCreateShader(GL_FRAGMENT_SHADER);
         int vshaderprog = glCreateShader(GL_VERTEX_SHADER);
@@ -257,7 +260,7 @@ class Engine{
         glAttachShader(program, vshaderprog);
         glLinkProgram(program);
 
-        cout << "engine_init: first program created" << endl;
+        cout << "engine_init:\u001b[36m first program created\u001b[37m" << endl;
 
         fshaderprog = glCreateShader(GL_FRAGMENT_SHADER);
         vshaderprog = glCreateShader(GL_VERTEX_SHADER);
@@ -270,31 +273,35 @@ class Engine{
         glAttachShader(sprogram, vshaderprog);
         glLinkProgram(sprogram);
 
-        cout << "engine_init: second program created" << endl;
+        cout << "engine_init:\u001b[36m second program created\u001b[37m" << endl;
 
         glGenFramebuffers(1, &frstpassfrm);
         glGenTextures(1, &frstpasstex);
         glGenTextures(1, &frstpassdtex);
-        cout << "engine_init: first pass generated" << endl;
+        cout << "engine_init:\u001b[36m first pass generated\u001b[37m" << endl;
         setupRPass();
-        cout << "engine_init: first pass created" << endl;
+        cout << "engine_init:\u001b[36m first pass created\u001b[37m" << endl;
 
         glGenFramebuffers(10, sFrm);
         glGenTextures(10, shadowimg);
 
-        cout << "engine_init: second pass generated" << endl;
+        cout << "engine_init:\u001b[36m second pass generated\u001b[37m" << endl;
         
         for(int i = 0; i != 10; i++){
             setupShadowMapping(sFrm[i], shadowimg[i]);
         }
 
-        cout << "engine_init: second pass created" << endl;
+        cout << "engine_init:\u001b[36m second pass created\u001b[37m" << endl;
 
         lastPos.x = pos.x;
         lastPos.y = pos.y;
         lastPos.z = pos.z;
 
-        cout << "engine_init: finished!" << endl;
+        alutInit(&argc, argv);
+
+        cout << "engine_init:\u001b[36m alut inited!\u001b[37m" << endl;
+
+        cout << "engine_init:\u001b[32m finished!\u001b[37m" << endl;
     }
     void setLight(int n, vec3 position, vec3 color, int lightState)
     {
