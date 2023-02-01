@@ -36,7 +36,7 @@ class Engine{
                     "void main() {" 
                     "  vec4 tr = meshs * vec4(positions, 1.0f);" 
                     "  tr = meshm * meshx * meshy * meshz * tr;" 
-                    "  gl_Position = sproj[0] * sxrot[0] * syrot[0] * stranslate[0] * tr;" 
+                    "  gl_Position = sproj[sCnt] * sxrot[sCnt] * syrot[sCnt] * stranslate[sCnt] * tr;" 
                     "}";
 
     const char* shadowFragment =
