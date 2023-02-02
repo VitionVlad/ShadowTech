@@ -198,6 +198,8 @@ public class Engine {
         GLES32.glTexParameteri(GLES32.GL_TEXTURE_2D, GLES32.GL_TEXTURE_COMPARE_FUNC, GLES32.GL_LEQUAL);
         GLES32.glTexParameteri(GLES32.GL_TEXTURE_2D, GLES32.GL_TEXTURE_WRAP_S, GLES32.GL_CLAMP_TO_BORDER);
         GLES32.glTexParameteri(GLES32.GL_TEXTURE_2D, GLES32.GL_TEXTURE_WRAP_T, GLES32.GL_CLAMP_TO_BORDER);
+        float[] borderColor = { 1.0f, 1.0f, 1.0f, 1.0f };
+        GLES32.glTexParameterfv( GLES32.GL_TEXTURE_2D,  GLES32.GL_TEXTURE_BORDER_COLOR, FloatBuffer.wrap(borderColor));
         GLES32.glBindTexture(GLES32.GL_TEXTURE_2D, 0);
 
         GLES32.glFramebufferTexture(GLES32.GL_FRAMEBUFFER, GLES32.GL_DEPTH_ATTACHMENT, shadowimg, 0);
