@@ -144,24 +144,24 @@ public class Mesh {
     }
     void makeQuad(String fshader, String vshader, Engine handle, byte[] tex, int tx, int ty){
         vertexes = new float[18];
-        vertexes[0] = -1;
-        vertexes[1] = 0.9f;
-        vertexes[2] = 1;
-        vertexes[3] = -1;
-        vertexes[4] = 1;
-        vertexes[5] = 1;
-        vertexes[6] = -0.9f;
-        vertexes[7] = 1;
-        vertexes[8] = 1;
-        vertexes[9] = -1;
-        vertexes[10] = 0.9f;
-        vertexes[11] = 1;
-        vertexes[12] = -0.9f;
-        vertexes[13] = 1;
-        vertexes[14] = 1;
-        vertexes[15] = -0.9f;
-        vertexes[16] = 0.9f;
-        vertexes[17] = 1;
+        vertexes[0] = 100;
+        vertexes[1] = 0;
+        vertexes[2] = 0;
+        vertexes[3] = 0;
+        vertexes[4] = 0;
+        vertexes[5] = 0;
+        vertexes[6] = 0;
+        vertexes[7] = 100;
+        vertexes[8] = 0;
+        vertexes[9] = 100;
+        vertexes[10] = 0;
+        vertexes[11] = 0;
+        vertexes[12] = 0;
+        vertexes[13] = 100;
+        vertexes[14] = 0;
+        vertexes[15] = 100;
+        vertexes[16] = 100;
+        vertexes[17] = 0;
 
         uv = new float[12];
         uv[0] = 0;
@@ -231,7 +231,7 @@ public class Mesh {
             GLES32.glVertexAttribPointer(uvHandle, 2, GLES32.GL_FLOAT, false, 0, uvbuf);
 
             GLES32.glUniformMatrix4fv(GLES32.glGetUniformLocation(program, "proj"), 1, false, handle.perspective.mat,  0);
-            GLES32.glUniformMatrix4fv(GLES32.glGetUniformLocation(program, "uiproj"), 1, false, handle.uiMat.mat,  0);
+            GLES32.glUniform2f(GLES32.glGetUniformLocation(program, "res"), handle.passRes.x, handle.passRes.y);
             GLES32.glUniformMatrix4fv(GLES32.glGetUniformLocation(program, "translate"), 1, false, handle.translate.mat,  0);
             GLES32.glUniformMatrix4fv(GLES32.glGetUniformLocation(program, "xrot"), 1, false, handle.xrot.mat,  0);
             GLES32.glUniformMatrix4fv(GLES32.glGetUniformLocation(program, "yrot"), 1, false, handle.yrot.mat,  0);

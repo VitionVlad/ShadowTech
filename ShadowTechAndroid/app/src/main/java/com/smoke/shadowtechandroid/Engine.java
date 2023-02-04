@@ -112,7 +112,6 @@ public class Engine {
     public mat4 translate = new mat4();
     public mat4 xrot = new mat4();
     public mat4 yrot = new mat4();
-    public mat4 uiMat = new mat4();
     public boolean touchControls = true;
     public float fov = 110;
     private int program;
@@ -297,7 +296,6 @@ public class Engine {
             }
         }
         perspective.buildperspectivemat(fov, 0.1f, 100, resolution.x/resolution.y);
-        uiMat.builduimat(1, 1, 0.1f, 10, resolution.x/resolution.y);
         yrot.buildyrotmat(-rot.x);
         xrot.buildxrotmat(rot.y);
         translate.buildtranslatemat(pos);
