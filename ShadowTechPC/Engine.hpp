@@ -36,7 +36,7 @@ class Engine{
                     "void main() {" 
                     "  vec4 tr = meshs * vec4(positions, 1.0f);" 
                     "  tr = meshm * meshx * meshy * meshz * tr;" 
-                    "  gl_Position = sproj[sCnt] * sxrot[sCnt] * syrot[sCnt] * stranslate[sCnt] * tr;" 
+                    "  gl_Position = sproj[0] * sxrot[0] * syrot[0] * stranslate[0] * tr;" 
                     "}";
 
     const char* shadowFragment =
@@ -122,7 +122,6 @@ class Engine{
     float speed = 0;
     bool allowmove = false;
     mat4 perspective = mat4();
-    mat4 uiMat;
     mat4 translate = mat4();
     mat4 xrot = mat4();
     mat4 yrot = mat4();
@@ -213,8 +212,6 @@ class Engine{
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
-        float borderColor[] = { 1.0f, 1.0f, 1.0f, 1.0f };
-        glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor); 
         glBindTexture(GL_TEXTURE_2D, 0);
 
         glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, shadowimg, 0);
@@ -359,7 +356,6 @@ class Engine{
             }
         }
         perspective.buildperspectivemat(fov, 0.1f, 100, resolution.x / resolution.y);
-        uiMat.builduimat(1, 1, 0.1, 10, resolution.x/resolution.y);
         yrot.buildyrotmat(-rot.x);
         xrot.buildxrotmat(rot.y);
         translate.buildtranslatemat(pos);

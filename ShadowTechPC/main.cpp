@@ -115,7 +115,7 @@ const char* vertexuiShaderCode =
                     "layout (location = 1) in vec3 normals;" 
                     "layout (location = 2) in vec2 uv;" 
                     "uniform mat4 proj;" 
-                    "uniform mat4 uiproj;" 
+                    "uniform vec2 res;" 
                     "uniform mat4 translate;" 
                     "uniform mat4 xrot;" 
                     "uniform mat4 yrot;" 
@@ -127,8 +127,8 @@ const char* vertexuiShaderCode =
                     "out vec3 fpos;"
                     "out vec4 projlightmat;"
                     "void main() {" 
-                    "  vec4 tr = meshm * meshs * vec4(positions.xy, 1, 1.0f);" 
-                    "  gl_Position = tr * uiproj;" 
+                    "  vec4 tr = meshs * vec4(positions.xy/res.xy, 0, 1.0f);" 
+                    "  gl_Position = meshm * tr;" 
                             "fuv = vec2(uv.x, uv.y);"
                     "}";
 

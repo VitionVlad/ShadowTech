@@ -151,24 +151,24 @@ class Mesh {
         CalcAABB();
     }
     void makeQuad(const char* fshader, const char* vshader, Engine handle, unsigned char tex[65535], int tx, int ty){
-        vertexes[0] = -1;
-        vertexes[1] = 0.9;
-        vertexes[2] = 1;
-        vertexes[3] = -1;
-        vertexes[4] = 1;
-        vertexes[5] = 1;
-        vertexes[6] = -0.9;
-        vertexes[7] = 1;
-        vertexes[8] = 1;
-        vertexes[9] = -1;
-        vertexes[10] = 0.9;
-        vertexes[11] = 1;
-        vertexes[12] = -0.9;
-        vertexes[13] = 1;
-        vertexes[14] = 1;
-        vertexes[15] = -0.9;
-        vertexes[16] = 0.9;
-        vertexes[17] = 1;
+        vertexes[0] = 100;
+        vertexes[1] = 0;
+        vertexes[2] = 0;
+        vertexes[3] = 0;
+        vertexes[4] = 0;
+        vertexes[5] = 0;
+        vertexes[6] = 0;
+        vertexes[7] = 100;
+        vertexes[8] = 0;
+        vertexes[9] = 100;
+        vertexes[10] = 0;
+        vertexes[11] = 0;
+        vertexes[12] = 0;
+        vertexes[13] = 100;
+        vertexes[14] = 0;
+        vertexes[15] = 100;
+        vertexes[16] = 100;
+        vertexes[17] = 0;
         totalv = 6;
         uv[0] = 0;
         uv[1] = 1;
@@ -241,7 +241,6 @@ class Mesh {
             meshMatrix.buildtranslatemat(meshPosition);
 
             glUniformMatrix4fv(glGetUniformLocation(program, "proj"), 1, false, handle.perspective.mat);
-            glUniformMatrix4fv(glGetUniformLocation(program, "uiproj"), 1, false, handle.uiMat.mat);
             glUniformMatrix4fv(glGetUniformLocation(program, "translate"), 1, false, handle.translate.mat);
             glUniformMatrix4fv(glGetUniformLocation(program, "xrot"), 1, false, handle.xrot.mat);
             glUniformMatrix4fv(glGetUniformLocation(program, "yrot"), 1, false, handle.yrot.mat);
@@ -251,6 +250,7 @@ class Mesh {
             glUniformMatrix4fv(glGetUniformLocation(program, "meshz"), 1, false, rotMat[2].mat);
             glUniformMatrix4fv(glGetUniformLocation(program, "meshs"), 1, false, scaleMat.mat);
             glUniform1iv(glGetUniformLocation(program, "lightStates"), 10, handle.usedLights);
+            glUniform2f(glGetUniformLocation(program, "res"), handle.resolution.x, handle.resolution.y);
 
             glUniformMatrix4fv(glGetUniformLocation(program, "sproj"), 10, false, handle.shadowProj.mat);
             glUniformMatrix4fv(glGetUniformLocation(program, "stranslate"), 10, false, handle.shadowTrans.mat);
