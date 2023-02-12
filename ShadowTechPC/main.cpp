@@ -191,7 +191,7 @@ void movecallback(){
 }
 
 int main(int argc, char **argv){
-    eng.Init(argc, argv);
+    eng.Init();
     eng.shadowProj.buildperspectivemat(90, 0.1, 100, 1, 0);
     //eng.shadowProj.buildorthomat(1, -1, 1, -1, speedf, 100f);
     eng.shadowTrans.buildtranslatemat(vec3(0, 0, -1), 0);
@@ -302,6 +302,5 @@ int main(int argc, char **argv){
 
         eng.endFrame();
     }
-    alutExit();
     return 1;
 }

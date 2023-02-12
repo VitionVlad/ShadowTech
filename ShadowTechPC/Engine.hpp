@@ -221,7 +221,7 @@ class Engine{
         glDrawBuffers(0, NULL);
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
     }
-    void Init(int argc, char **argv){
+    void Init(){
         cout << "engine_init:\u001b[36m engine started initializing\u001b[37m" << endl;
         glfwInit();
         cout << "engine_init:\u001b[36m glfw inited!\u001b[37m" << endl;
@@ -297,8 +297,6 @@ class Engine{
         lastPos.x = pos.x;
         lastPos.y = pos.y;
         lastPos.z = pos.z;
-
-        alutInit(&argc, argv);
 
         cout << "engine_init:\u001b[36m alut inited!\u001b[37m" << endl;
 

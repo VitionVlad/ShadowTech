@@ -1,23 +1,22 @@
 #include <iostream>
 
-#include <AL/alut.h>
+#include <SFML/Audio.hpp>
 
 class audioSource{
     public:
-    ALuint buffer;
-    ALuint source;
+    sf::SoundBuffer buffer;
+    sf::Sound sound;
     void init(const char *path){
-        buffer = alutCreateBufferFromFile(path);
-        alGenSources(1, &source);
-        alSourcei(source, AL_BUFFER, buffer);
+        buffer.loadFromFile(path);
+        sound.setBuffer(buffer);
     }
     audioSource(const char *path){
         init(path);
     }
     void play(){
-        alSourcePlay(source);
+        sound.play();
     }
     void stop(){
-        alSourceStop(source);
+        sound.stop();
     }
 };
