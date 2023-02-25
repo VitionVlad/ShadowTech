@@ -76,8 +76,10 @@ function main(){
     function drawFrame(){
         eng.beginFrame();
         key_callback();
+        
         mesh.Draw(eng);
-        requestAnimationFrame(drawFrame)
+
+        eng.endFrame(drawFrame);
     }
 }
 

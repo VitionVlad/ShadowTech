@@ -133,6 +133,9 @@ class Engine{
         this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
         this.gl.clearColor(0.0, 0.0, 0.0, 1.0);
     }
+    endFrame(framefunc){
+        requestAnimationFrame(framefunc);
+    }
 }
 
 class Mesh{
@@ -152,7 +155,7 @@ class Mesh{
         this.positionLoc = engineh.gl.getAttribLocation(this.shaderprog, "positions");
         this.normalLoc = engineh.gl.getAttribLocation(this.shaderprog, "normals");
         this.uvLoc = engineh.gl.getAttribLocation(this.shaderprog, "uv");
-        
+
         console.log(this.positionLoc+" "+this.normalLoc+" "+this.uvLoc);
         this.totalv = geometry.length/3;
         this.pos = new vec3(0.0, 0.0, 0.0);
