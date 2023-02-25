@@ -2,21 +2,26 @@ const fshader = `#version 300 es
 precision mediump float;
 out vec4 color;
 in vec2 xy;
+in vec3 norm;
 void main(){
-    color = vec4(xy, 1, 1);
+    color = vec4(norm, 1);
 }
 `;
 
 const vshader = `#version 300 es
 in vec3 positions;
+in vec3 normals;
+in vec2 uv;
 uniform mat4 proj;
 uniform mat4 trans;
 uniform mat4 rotx;
 uniform mat4 roty;
 out vec2 xy;
+out vec3 norm;
 void main(){
     gl_Position = proj * rotx * roty * trans * vec4(positions, 1.0);
-    xy = positions.xy;
+    xy = uv;
+    norm = normals;
 }
 `;
 
@@ -26,14 +31,9 @@ function main(){
     var gl;
     var eng = new Engine(gl, canvas);
     eng.pos.z = -1.0;
-    var geom = new Float32Array([
-        -1, -1, 0,
-        -1, 1, 0,
-        1, 1, 0
-    ]);
     eng.rot.x = 0.0;
     eng.rot.y = 0.0;
-    var mesh = new Mesh(susv, fshader, vshader, eng);
+    var mesh = new Mesh(susv, susn, susu, fshader, vshader, eng);
     function key_callback(){
         document.addEventListener('keydown', function(event) {
             if (event.key == "w") {

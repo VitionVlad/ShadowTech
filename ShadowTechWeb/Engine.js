@@ -136,26 +136,30 @@ class Engine{
 }
 
 class Mesh{
-    constructor(geometry, fshader, vshader, engineh){
+    constructor(geometry, normal, uv, fshader, vshader, engineh){
         this.vBuf = engineh.gl.createBuffer();
         engineh.gl.bindBuffer(engineh.gl.ARRAY_BUFFER, this.vBuf);
         engineh.gl.bufferData(engineh.gl.ARRAY_BUFFER, geometry, engineh.gl.STATIC_DRAW);
+        this.nBuf = engineh.gl.createBuffer();
+        engineh.gl.bindBuffer(engineh.gl.ARRAY_BUFFER, this.nBuf);
+        engineh.gl.bufferData(engineh.gl.ARRAY_BUFFER, normal, engineh.gl.STATIC_DRAW);
+        this.uBuf = engineh.gl.createBuffer();
+        engineh.gl.bindBuffer(engineh.gl.ARRAY_BUFFER, this.uBuf);
+        engineh.gl.bufferData(engineh.gl.ARRAY_BUFFER, uv, engineh.gl.STATIC_DRAW);
         this.meshMat = new mat4();
         this.shaderprog = engineh.initShaderProgram(vshader, fshader);
+
         this.positionLoc = engineh.gl.getAttribLocation(this.shaderprog, "positions");
+        this.normalLoc = engineh.gl.getAttribLocation(this.shaderprog, "normals");
+        this.uvLoc = engineh.gl.getAttribLocation(this.shaderprog, "uv");
+        
+        console.log(this.positionLoc+" "+this.normalLoc+" "+this.uvLoc);
         this.totalv = geometry.length/3;
         this.pos = new vec3(0.0, 0.0, 0.0);
         this.rot = new vec3(0.0, 0.0, 0.0);
     }
     Draw(engineh){
-        engineh.gl.enableVertexAttribArray(this.positionLoc);
         engineh.gl.useProgram(this.shaderprog);
-        var numComponents = 3; 
-        var type = engineh.gl.FLOAT;   
-        var normalize = false; 
-        var offset = 0;        
-        var stride = 0; 
-        engineh.gl.vertexAttribPointer(this.positionLoc, numComponents, type, normalize, offset, stride);
 
         this.meshMat.clearmat();
         this.meshMat.buildperspectivemat(engineh.fov, 0.1, 100.0, engineh.gl.canvas.width/engineh.gl.canvas.height);
@@ -173,6 +177,18 @@ class Mesh{
         this.meshMat.buildyrotmat(-engineh.rot.x);
         engineh.gl.uniformMatrix4fv(engineh.gl.getUniformLocation(this.shaderprog, "rotx"), false, this.meshMat.mat);
 
-        engineh.gl.drawArrays(engineh.gl.TRIANGLES, offset, this.totalv);
+        engineh.gl.bindBuffer(engineh.gl.ARRAY_BUFFER, this.uBuf);
+        engineh.gl.enableVertexAttribArray(this.uvLoc);
+        engineh.gl.vertexAttribPointer(this.uvLoc, 2, engineh.gl.FLOAT, false, 0, 0);
+
+        engineh.gl.bindBuffer(engineh.gl.ARRAY_BUFFER, this.nBuf);
+        engineh.gl.enableVertexAttribArray(this.normalLoc);
+        engineh.gl.vertexAttribPointer(this.normalLoc, 3, engineh.gl.FLOAT, false, 0, 0);
+
+        engineh.gl.bindBuffer(engineh.gl.ARRAY_BUFFER, this.vBuf);
+        engineh.gl.enableVertexAttribArray(this.positionLoc);
+        engineh.gl.vertexAttribPointer(this.positionLoc, 3, engineh.gl.FLOAT, false, 0, 0);
+
+        engineh.gl.drawArrays(engineh.gl.TRIANGLES, 0, this.totalv);
     }
 }
