@@ -195,7 +195,7 @@ class Engine{
 }
 
 class Mesh{
-    constructor(geometry, normal, uv, fshader, vshader, engineh){
+    constructor(geometry, normal, uv, fshader, vshader, engineh, albedo, resx, resy){
         this.vBuf = engineh.gl.createBuffer();
         engineh.gl.bindBuffer(engineh.gl.ARRAY_BUFFER, this.vBuf);
         engineh.gl.bufferData(engineh.gl.ARRAY_BUFFER, geometry, engineh.gl.STATIC_DRAW);
@@ -216,6 +216,13 @@ class Mesh{
         this.totalv = geometry.length/3;
         this.pos = new vec3(0.0, 0.0, 0.0);
         this.rot = new vec3(0.0, 0.0, 0.0);
+        this.texture = engineh.gl.createTexture();
+        engineh.gl.bindTexture(engineh.gl.TEXTURE_2D, this.texture);
+        engineh.gl.texImage2D(engineh.gl.TEXTURE_2D, 0, engineh.gl.RGBA, resx, resy, 0, engineh.gl.RGBA, engineh.gl.UNSIGNED_BYTE, albedo);
+        engineh.gl.texParameteri(engineh.gl.TEXTURE_2D, engineh.gl.TEXTURE_MIN_FILTER, engineh.gl.LINEAR);
+        engineh.gl.texParameteri(engineh.gl.TEXTURE_2D, engineh.gl.TEXTURE_WRAP_S, engineh.gl.MIRRORED_REPEAT);
+        engineh.gl.texParameteri(engineh.gl.TEXTURE_2D, engineh.gl.TEXTURE_WRAP_T, engineh.gl.MIRRORED_REPEAT);
+        engineh.gl.bindTexture(engineh.gl.TEXTURE_2D, null);
     }
     Draw(engineh){
         engineh.gl.useProgram(this.shaderprog);
@@ -235,6 +242,10 @@ class Mesh{
         this.meshMat.clearmat();
         this.meshMat.buildyrotmat(-engineh.rot.x);
         engineh.gl.uniformMatrix4fv(engineh.gl.getUniformLocation(this.shaderprog, "rotx"), false, this.meshMat.mat);
+
+        engineh.gl.uniform1i(engineh.gl.getUniformLocation(this.shaderprog, "albedo"), 0);
+        engineh.gl.activeTexture(engineh.gl.TEXTURE0);
+        engineh.gl.bindTexture(engineh.gl.TEXTURE_2D, this.texture);
 
         engineh.gl.bindBuffer(engineh.gl.ARRAY_BUFFER, this.uBuf);
         engineh.gl.enableVertexAttribArray(this.uvLoc);

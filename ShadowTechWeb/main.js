@@ -4,8 +4,9 @@ layout (location = 0) out vec4 color;
 in vec2 xy;
 in vec3 norm;
 in float dep;
+uniform sampler2D albedo;
 void main(){
-    color = vec4(norm, 1);
+    color = vec4(texture(albedo, xy).rgb, 1);
 }
 `;
 
@@ -37,7 +38,7 @@ function main(){
     eng.pos.z = -1.0;
     eng.rot.x = 0.0;
     eng.rot.y = 0.0;
-    var mesh = new Mesh(susv, susn, susu, fshader, vshader, eng);
+    var mesh = new Mesh(susv, susn, susu, fshader, vshader, eng, tex, texx, texy);
     function key_callback(){
         document.addEventListener('keydown', function(event) {
             if (event.key == "w") {
