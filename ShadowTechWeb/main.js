@@ -11,6 +11,10 @@ uniform vec3 lightc[5];
 uniform vec3 ppos;
 in vec3 posit;
 
+const float constant = 1.0;
+const float linear = 0.09;
+const float quadratic = 0.032;
+
 void main(){
     vec3 finalcolor = vec3(0);
     vec3 normal = normalize(norm);
@@ -27,6 +31,12 @@ void main(){
         vec3 reflectDir = reflect(-lightDir, normal);  
         float spec = pow(max(dot(viewDir, reflectDir), 0.0), 32.0);
         vec3 specu = specularStrength * spec * lightc[i];  
+
+        float distance    = length(lightp[i] - posit);
+        float attenuation = 1.0 / (constant + linear * distance + quadratic * (distance * distance)); 
+        ambient  *= attenuation; 
+        diffuse  *= attenuation;
+        specu *= attenuation;     
 
         finalcolor += (ambient + diffuse + specu) * texture(albedo, xy).rgb;
     }
