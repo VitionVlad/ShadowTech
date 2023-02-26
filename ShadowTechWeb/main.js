@@ -5,10 +5,32 @@ in vec2 xy;
 in vec3 norm;
 in float dep;
 uniform sampler2D albedo;
+uniform sampler2D specular;
 uniform vec3 lightp[5];
 uniform vec3 lightc[5];
+uniform vec3 ppos;
+in vec3 posit;
+
 void main(){
-    color = vec4(texture(albedo, xy).rgb, 1);
+    vec3 finalcolor = vec3(0);
+    vec3 normal = normalize(norm);
+    for(int i = 0; i!=5; i++){
+        float ambientStrength = 0.1;
+        vec3 ambient = ambientStrength * lightc[i];
+
+        vec3 lightDir = normalize(lightp[i] - posit);
+        float diff = max(dot(normal, lightDir), 0.0);
+        vec3 diffuse = diff * lightc[i];
+
+        float specularStrength = texture(specular, xy).r;
+        vec3 viewDir = normalize(vec3(-ppos.x, -ppos.y, -ppos.z) - posit);
+        vec3 reflectDir = reflect(-lightDir, normal);  
+        float spec = pow(max(dot(viewDir, reflectDir), 0.0), 32.0);
+        vec3 specu = specularStrength * spec * lightc[i];  
+
+        finalcolor += (ambient + diffuse + specu) * texture(albedo, xy).rgb;
+    }
+    color = vec4(finalcolor, 1);
 }
 `;
 
@@ -30,6 +52,7 @@ uniform mat4 mscale;
 out vec2 xy;
 out vec3 norm;
 out float dep;
+out vec3 posit;
 void main(){
     vec4 fin = mscale * vec4(positions, 1.0);
     fin = mtrans * mrotx * mroty * mrotz * fin;
@@ -38,18 +61,21 @@ void main(){
     dep = fin.z;
     xy = uv;
     norm = normals;
+    posit = positions;
 }
 `;
 
 function main(){
-    const speed = 0.001;
+    var speed = 0.001;
     var canvas;
     var gl;
     var eng = new Engine(gl, canvas);
     eng.pos.z = -1.0;
+    eng.pos.y = -1.7;
     eng.rot.x = 0.0;
     eng.rot.y = 0.0;
-    var mesh = new Mesh(susv, susn, susu, fshader, vshader, eng, tex, texx, texy);
+    eng.setLight(0, new vec3(0, 2, 0), new vec3(1, 1, 1));
+    var mesh = new Mesh(susv, susn, susu, fshader, vshader, eng, tex, tex, texx, texy);
     function key_callback(){
         document.addEventListener('keydown', function(event) {
             if (event.key == "w") {

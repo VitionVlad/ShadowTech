@@ -186,6 +186,14 @@ class Engine{
             0, 0, 0,
         ]);
     }
+    setLight(num, pos, color){
+        this.lightposes[num*3] = pos.x;
+        this.lightposes[num*3+1] = pos.y;
+        this.lightposes[num*3+2] = pos.z;
+        this.lightcolors[num*3] = color.x;
+        this.lightcolors[num*3+1] = color.y;
+        this.lightcolors[num*3+2] = color.z;
+    }
     beginFrame(){
         this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, this.mainFramebuffer);
         this.gl.viewport(0, 0, this.gl.canvas.width, this.gl.canvas.height);
@@ -209,7 +217,7 @@ class Engine{
 }
 
 class Mesh{
-    constructor(geometry, normal, uv, fshader, vshader, engineh, albedo, resx, resy){
+    constructor(geometry, normal, uv, fshader, vshader, engineh, albedo, specular, resx, resy){
         this.vBuf = engineh.gl.createBuffer();
         engineh.gl.bindBuffer(engineh.gl.ARRAY_BUFFER, this.vBuf);
         engineh.gl.bufferData(engineh.gl.ARRAY_BUFFER, geometry, engineh.gl.STATIC_DRAW);
@@ -238,14 +246,13 @@ class Mesh{
         engineh.gl.texParameteri(engineh.gl.TEXTURE_2D, engineh.gl.TEXTURE_WRAP_S, engineh.gl.MIRRORED_REPEAT);
         engineh.gl.texParameteri(engineh.gl.TEXTURE_2D, engineh.gl.TEXTURE_WRAP_T, engineh.gl.MIRRORED_REPEAT);
         engineh.gl.bindTexture(engineh.gl.TEXTURE_2D, null);
-    }
-    setLight(num, pos, color){
-        this.lightposes[num*3] = pos.x;
-        this.lightposes[num*3+1] = pos.y;
-        this.lightposes[num*3+2] = pos.z;
-        this.lightcolors[num*3] = color.x;
-        this.lightcolors[num*3+1] = color.y;
-        this.lightcolors[num*3+2] = color.z;
+        this.spec = engineh.gl.createTexture();
+        engineh.gl.bindTexture(engineh.gl.TEXTURE_2D, this.spec);
+        engineh.gl.texImage2D(engineh.gl.TEXTURE_2D, 0, engineh.gl.RGBA, resx, resy, 0, engineh.gl.RGBA, engineh.gl.UNSIGNED_BYTE, specular);
+        engineh.gl.texParameteri(engineh.gl.TEXTURE_2D, engineh.gl.TEXTURE_MIN_FILTER, engineh.gl.LINEAR);
+        engineh.gl.texParameteri(engineh.gl.TEXTURE_2D, engineh.gl.TEXTURE_WRAP_S, engineh.gl.MIRRORED_REPEAT);
+        engineh.gl.texParameteri(engineh.gl.TEXTURE_2D, engineh.gl.TEXTURE_WRAP_T, engineh.gl.MIRRORED_REPEAT);
+        engineh.gl.bindTexture(engineh.gl.TEXTURE_2D, null);
     }
     Draw(engineh){
         engineh.gl.useProgram(this.shaderprog);
@@ -289,9 +296,15 @@ class Mesh{
         engineh.gl.uniform3fv(engineh.gl.getUniformLocation(this.shaderprog, "lightp"), engineh.lightposes);
         engineh.gl.uniform3fv(engineh.gl.getUniformLocation(this.shaderprog, "lightc"), engineh.lightcolors);
 
+        engineh.gl.uniform3f(engineh.gl.getUniformLocation(this.shaderprog, "ppos"), engineh.pos.x, engineh.pos.y, engineh.pos.z);
+
         engineh.gl.uniform1i(engineh.gl.getUniformLocation(this.shaderprog, "albedo"), 0);
         engineh.gl.activeTexture(engineh.gl.TEXTURE0);
         engineh.gl.bindTexture(engineh.gl.TEXTURE_2D, this.texture);
+
+        engineh.gl.uniform1i(engineh.gl.getUniformLocation(this.shaderprog, "specular"), 1);
+        engineh.gl.activeTexture(engineh.gl.TEXTURE1);
+        engineh.gl.bindTexture(engineh.gl.TEXTURE_2D, this.spec);
 
         engineh.gl.bindBuffer(engineh.gl.ARRAY_BUFFER, this.uBuf);
         engineh.gl.enableVertexAttribArray(this.uvLoc);
