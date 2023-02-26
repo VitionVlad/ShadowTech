@@ -127,13 +127,69 @@ class Engine{
         this.fov = 120;
         this.pos = new vec3(0.0, 0.0, 0.0);
         this.rot = new vec2(0.0, 0.0);
+        this.fsSource = `#version 300 es
+        precision mediump float;
+        in vec2 uv;
+        out vec4 color;
+        uniform sampler2D maintex;
+        void main(){
+            color = vec4(texture(maintex, uv).rgb, 1);
+        }
+        `;
+        this.vsSource = `#version 300 es
+        const vec2 screenplane[6] = vec2[](
+            vec2(-1, -1),
+            vec2(-1, 1),
+            vec2(1, 1),
+            vec2(-1, -1),
+            vec2(1, -1),
+            vec2(1, 1)
+        );
+        out vec2 uv;
+        void main(){
+            gl_Position = vec4(screenplane[gl_VertexID], 0, 1);
+            uv = (screenplane[gl_VertexID]+vec2(1))/vec2(2);
+        }
+        `;
+        this.finalprog = this.initShaderProgram(this.vsSource, this.fsSource);
+        this.mainFramebuffer = this.gl.createFramebuffer();
+        this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, this.mainFramebuffer);
+        this.torendertex = this.gl.createTexture();
+        this.gl.bindTexture(this.gl.TEXTURE_2D, this.torendertex);
+        this.gl.texImage2D(this.gl.TEXTURE_2D, 0, this.gl.RGBA, this.gl.canvas.width, this.gl.canvas.height, 0, this.gl.RGBA, this.gl.UNSIGNED_BYTE, null);
+        this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_MIN_FILTER, this.gl.LINEAR);
+        this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_WRAP_S, this.gl.CLAMP_TO_EDGE);
+        this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_WRAP_T, this.gl.CLAMP_TO_EDGE);
+        this.torenderdtex = this.gl.createTexture();
+        this.gl.bindTexture(this.gl.TEXTURE_2D, this.torenderdtex);
+        this.gl.texImage2D(this.gl.TEXTURE_2D, 0, this.gl.DEPTH_COMPONENT32F, this.gl.canvas.width, this.gl.canvas.height, 0, this.gl.DEPTH_COMPONENT, this.gl.FLOAT, null);
+        this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_MIN_FILTER, this.gl.LINEAR);
+        this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_WRAP_S, this.gl.CLAMP_TO_EDGE);
+        this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_WRAP_T, this.gl.CLAMP_TO_EDGE);
+        this.gl.bindTexture(this.gl.TEXTURE_2D, this.torendertex);
+        //this.gl.bindTexture(this.gl.TEXTURE_2D, null);
+        this.gl.framebufferTexture2D(this.gl.FRAMEBUFFER, this.gl.COLOR_ATTACHMENT0, this.gl.TEXTURE_2D, this.torendertex, 0);
+        this.gl.framebufferTexture2D(this.gl.FRAMEBUFFER, this.gl.DEPTH_ATTACHMENT, this.gl.TEXTURE_2D, this.torenderdtex, 0);
     }
     beginFrame(){
+        this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, this.mainFramebuffer);
         this.gl.viewport(0, 0, this.gl.canvas.width, this.gl.canvas.height);
         this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
         this.gl.clearColor(0.0, 0.0, 0.0, 1.0);
     }
     endFrame(framefunc){
+        this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, null);
+        this.gl.viewport(0, 0, this.gl.canvas.width, this.gl.canvas.height);
+        this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
+        this.gl.clearColor(0.0, 0.0, 0.0, 1.0);
+        this.gl.useProgram(this.finalprog);
+
+        //this.gl.activeTexture(this.gl.TEXTURE0);
+        //this.gl.bindTexture(this.gl.TEXTURE_2D, this.torendertex);
+        this.gl.uniform1i(this.gl.getUniformLocation(this.finalprog, "maintex"), 0);
+        //this.gl.bindTexture(this.gl.TEXTURE_2D, null);
+
+        this.gl.drawArrays(this.gl.TRIANGLE_STRIP, 0, 6);
         requestAnimationFrame(framefunc);
     }
 }

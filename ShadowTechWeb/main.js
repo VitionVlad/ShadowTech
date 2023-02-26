@@ -1,6 +1,6 @@
 const fshader = `#version 300 es
 precision mediump float;
-out vec4 color;
+layout (location = 0) out vec4 color;
 in vec2 xy;
 in vec3 norm;
 void main(){
