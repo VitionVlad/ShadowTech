@@ -6,6 +6,7 @@ in vec3 norm;
 in float dep;
 uniform sampler2D albedo;
 uniform sampler2D specular;
+uniform sampler2D shadow;
 uniform vec3 lightp[5];
 uniform vec3 lightc[5];
 uniform vec3 ppos;
@@ -59,6 +60,11 @@ uniform mat4 mroty;
 uniform mat4 mrotz;
 uniform mat4 mscale;
 
+uniform mat4 sproj;
+uniform mat4 strans;
+uniform mat4 srotx;
+uniform mat4 sroty;
+
 out vec2 xy;
 out vec3 norm;
 out float dep;
@@ -84,6 +90,8 @@ function main(){
     eng.pos.y = -1.7;
     eng.rot.x = 0.0;
     eng.rot.y = 0.0;
+    eng.shadowpos.z = -1.0;
+    eng.shadowpos.y = -1.0;
     eng.setLight(0, new vec3(0, 2, 0), new vec3(1, 1, 1));
     var mesh = new Mesh(susv, susn, susu, fshader, vshader, eng, tex, tex, texx, texy);
     function key_callback(){
@@ -126,6 +134,8 @@ function main(){
     }
     drawFrame();
     function drawFrame(){
+        eng.beginShadowPass();
+        mesh.Draw(eng);
         eng.beginFrame();
         key_callback();
         

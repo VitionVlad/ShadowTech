@@ -138,6 +138,7 @@ class Engine{
         in vec2 uv;
         out vec4 color;
         uniform sampler2D maintex;
+        uniform sampler2D shadow;
         void main(){
             color = vec4(texture(maintex, uv).rgb, 1);
         }
@@ -157,6 +158,35 @@ class Engine{
             uv = (screenplane[gl_VertexID]+vec2(1))/vec2(2);
         }
         `;
+        this.fsShadow = `#version 300 es
+        precision mediump float;
+        layout (location = 0) out vec4 color;
+        in float dep;
+        void main(){
+            color = vec4(vec3(dep), 1);
+        }
+        `;
+        this.vsShadow = `#version 300 es
+        in vec3 positions;
+        out float dep;
+        uniform mat4 proj;
+        uniform mat4 trans;
+        uniform mat4 rotx;
+        uniform mat4 roty;
+
+        uniform mat4 mtrans;
+        uniform mat4 mrotx;
+        uniform mat4 mroty;
+        uniform mat4 mrotz;
+        uniform mat4 mscale;
+        void main(){
+            vec4 fin = mscale * vec4(positions, 1.0);
+            fin = mtrans * mrotx * mroty * mrotz * fin;
+            fin = proj * rotx * roty * trans * fin;
+            gl_Position = fin;
+            dep = fin.z;
+        }
+        `;
         this.finalprog = this.initShaderProgram(this.vsSource, this.fsSource);
         this.mainFramebuffer = this.gl.createFramebuffer();
         this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, this.mainFramebuffer);
@@ -171,6 +201,28 @@ class Engine{
         this.gl.renderbufferStorage(this.gl.RENDERBUFFER, this.gl.DEPTH_COMPONENT32F, this.gl.canvas.width, this.gl.canvas.height);
         this.gl.framebufferTexture2D(this.gl.FRAMEBUFFER, this.gl.COLOR_ATTACHMENT0, this.gl.TEXTURE_2D, this.torendertex, 0)
         this.gl.framebufferRenderbuffer(this.gl.FRAMEBUFFER, this.gl.DEPTH_ATTACHMENT, this.gl.RENDERBUFFER, this.depthBuffer);
+
+        this.shadowmapresolution = 4000;
+        this.shadowpos = new vec3(0, 0, 0);
+        this.shadowrot = new vec2(0, 0);
+        this.sfov = 90;
+        this.isshadowpass = false;
+        this.shadowprog = this.initShaderProgram(this.vsShadow, this.fsShadow);
+        this.positionLoc = gl.getAttribLocation(this.shadowprog, "positions");
+        this.shadowfr = this.gl.createFramebuffer();
+        this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, this.shadowfr);
+        this.shadowtex = this.gl.createTexture();
+        this.gl.bindTexture(this.gl.TEXTURE_2D, this.shadowtex);
+        this.gl.texImage2D(this.gl.TEXTURE_2D, 0, this.gl.RGBA, this.shadowmapresolution, this.shadowmapresolution, 0, this.gl.RGBA, this.gl.UNSIGNED_BYTE, null);
+        this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_MIN_FILTER, this.gl.LINEAR);
+        this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_WRAP_S, this.gl.CLAMP_TO_EDGE);
+        this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_WRAP_T, this.gl.CLAMP_TO_EDGE);
+        this.depthBuffers = this.gl.createRenderbuffer();
+        this.gl.bindRenderbuffer(this.gl.RENDERBUFFER, this.depthBuffers);
+        this.gl.renderbufferStorage(this.gl.RENDERBUFFER, this.gl.DEPTH_COMPONENT32F, this.shadowmapresolution, this.shadowmapresolution);
+        this.gl.framebufferTexture2D(this.gl.FRAMEBUFFER, this.gl.COLOR_ATTACHMENT0, this.gl.TEXTURE_2D, this.shadowtex, 0)
+        this.gl.framebufferRenderbuffer(this.gl.FRAMEBUFFER, this.gl.DEPTH_ATTACHMENT, this.gl.RENDERBUFFER, this.depthBuffers);
+
         this.lightposes = new Float32Array([
             0, 0, 0,
             0, 0, 0,
@@ -194,7 +246,15 @@ class Engine{
         this.lightcolors[num*3+1] = color.y;
         this.lightcolors[num*3+2] = color.z;
     }
+    beginShadowPass(){
+        this.isshadowpass = true;
+        this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, this.shadowfr);
+        this.gl.viewport(0, 0, this.shadowmapresolution, this.shadowmapresolution);
+        this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
+        this.gl.clearColor(0.0, 0.0, 0.0, 1.0);
+    }
     beginFrame(){
+        this.isshadowpass = false;
         this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, this.mainFramebuffer);
         this.gl.viewport(0, 0, this.gl.canvas.width, this.gl.canvas.height);
         this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
@@ -210,6 +270,10 @@ class Engine{
         this.gl.uniform1i(this.gl.getUniformLocation(this.finalprog, "maintex"), 0);
         this.gl.activeTexture(this.gl.TEXTURE0);
         this.gl.bindTexture(this.gl.TEXTURE_2D, this.torendertex);
+
+        this.gl.uniform1i(this.gl.getUniformLocation(this.finalprog, "shadow"), 1);
+        this.gl.activeTexture(this.gl.TEXTURE1);
+        this.gl.bindTexture(this.gl.TEXTURE_2D, this.shadowtex);
 
         this.gl.drawArrays(this.gl.TRIANGLE_STRIP, 0, 6);
         requestAnimationFrame(framefunc);
@@ -255,69 +319,135 @@ class Mesh{
         engineh.gl.bindTexture(engineh.gl.TEXTURE_2D, null);
     }
     Draw(engineh){
-        engineh.gl.useProgram(this.shaderprog);
+        if(engineh.isshadowpass === false){
+            engineh.gl.useProgram(this.shaderprog);
 
-        this.meshMat.clearmat();
-        this.meshMat.buildperspectivemat(engineh.fov, 0.1, 100.0, engineh.gl.canvas.width/engineh.gl.canvas.height);
-        engineh.gl.uniformMatrix4fv(engineh.gl.getUniformLocation(this.shaderprog, "proj"), false, this.meshMat.mat);
+            this.meshMat.clearmat();
+            this.meshMat.buildperspectivemat(engineh.sfov, 0.1, 100.0, engineh.gl.canvas.width/engineh.gl.canvas.height);
+            engineh.gl.uniformMatrix4fv(engineh.gl.getUniformLocation(this.shaderprog, "sproj"), false, this.meshMat.mat);
 
-        this.meshMat.clearmat();
-        this.meshMat.buildtranslatemat(engineh.pos);
-        engineh.gl.uniformMatrix4fv(engineh.gl.getUniformLocation(this.shaderprog, "trans"), false, this.meshMat.mat);
+            this.meshMat.clearmat();
+            this.meshMat.buildtranslatemat(engineh.shadowpos);
+            engineh.gl.uniformMatrix4fv(engineh.gl.getUniformLocation(this.shaderprog, "strans"), false, this.meshMat.mat);
 
-        this.meshMat.clearmat();
-        this.meshMat.buildtranslatemat(this.pos);
-        engineh.gl.uniformMatrix4fv(engineh.gl.getUniformLocation(this.shaderprog, "mtrans"), false, this.meshMat.mat);
+            this.meshMat.clearmat();
+            this.meshMat.buildxrotmat(-engineh.shadowrot.y);
+            engineh.gl.uniformMatrix4fv(engineh.gl.getUniformLocation(this.shaderprog, "sroty"), false, this.meshMat.mat);
 
-        this.meshMat.clearmat();
-        this.meshMat.buildxrotmat(-engineh.rot.y);
-        engineh.gl.uniformMatrix4fv(engineh.gl.getUniformLocation(this.shaderprog, "roty"), false, this.meshMat.mat);
+            this.meshMat.clearmat();
+            this.meshMat.buildyrotmat(-engineh.shadowrot.x);
+            engineh.gl.uniformMatrix4fv(engineh.gl.getUniformLocation(this.shaderprog, "srotx"), false, this.meshMat.mat);
 
-        this.meshMat.clearmat();
-        this.meshMat.buildyrotmat(-engineh.rot.x);
-        engineh.gl.uniformMatrix4fv(engineh.gl.getUniformLocation(this.shaderprog, "rotx"), false, this.meshMat.mat);
+            this.meshMat.clearmat();
+            this.meshMat.buildperspectivemat(engineh.fov, 0.1, 100.0, engineh.gl.canvas.width/engineh.gl.canvas.height);
+            engineh.gl.uniformMatrix4fv(engineh.gl.getUniformLocation(this.shaderprog, "proj"), false, this.meshMat.mat);
 
-        this.meshMat.clearmat();
-        this.meshMat.buildxrotmat(this.rot.x);
-        engineh.gl.uniformMatrix4fv(engineh.gl.getUniformLocation(this.shaderprog, "mrotx"), false, this.meshMat.mat);
+            this.meshMat.clearmat();
+            this.meshMat.buildtranslatemat(engineh.pos);
+            engineh.gl.uniformMatrix4fv(engineh.gl.getUniformLocation(this.shaderprog, "trans"), false, this.meshMat.mat);
 
-        this.meshMat.clearmat();
-        this.meshMat.buildyrotmat(this.rot.y);
-        engineh.gl.uniformMatrix4fv(engineh.gl.getUniformLocation(this.shaderprog, "mroty"), false, this.meshMat.mat);
+            this.meshMat.clearmat();
+            this.meshMat.buildtranslatemat(this.pos);
+            engineh.gl.uniformMatrix4fv(engineh.gl.getUniformLocation(this.shaderprog, "mtrans"), false, this.meshMat.mat);
 
-        this.meshMat.clearmat();
-        this.meshMat.buildzrotmat(this.rot.z);
-        engineh.gl.uniformMatrix4fv(engineh.gl.getUniformLocation(this.shaderprog, "mrotz"), false, this.meshMat.mat);
+            this.meshMat.clearmat();
+            this.meshMat.buildxrotmat(-engineh.rot.y);
+            engineh.gl.uniformMatrix4fv(engineh.gl.getUniformLocation(this.shaderprog, "roty"), false, this.meshMat.mat);
 
-        this.meshMat.clearmat();
-        this.meshMat.buildScaleMat(this.scale);
-        engineh.gl.uniformMatrix4fv(engineh.gl.getUniformLocation(this.shaderprog, "mscale"), false, this.meshMat.mat);
+            this.meshMat.clearmat();
+            this.meshMat.buildyrotmat(-engineh.rot.x);
+            engineh.gl.uniformMatrix4fv(engineh.gl.getUniformLocation(this.shaderprog, "rotx"), false, this.meshMat.mat);
 
-        engineh.gl.uniform3fv(engineh.gl.getUniformLocation(this.shaderprog, "lightp"), engineh.lightposes);
-        engineh.gl.uniform3fv(engineh.gl.getUniformLocation(this.shaderprog, "lightc"), engineh.lightcolors);
+            this.meshMat.clearmat();
+            this.meshMat.buildxrotmat(this.rot.x);
+            engineh.gl.uniformMatrix4fv(engineh.gl.getUniformLocation(this.shaderprog, "mrotx"), false, this.meshMat.mat);
 
-        engineh.gl.uniform3f(engineh.gl.getUniformLocation(this.shaderprog, "ppos"), engineh.pos.x, engineh.pos.y, engineh.pos.z);
+            this.meshMat.clearmat();
+            this.meshMat.buildyrotmat(this.rot.y);
+            engineh.gl.uniformMatrix4fv(engineh.gl.getUniformLocation(this.shaderprog, "mroty"), false, this.meshMat.mat);
 
-        engineh.gl.uniform1i(engineh.gl.getUniformLocation(this.shaderprog, "albedo"), 0);
-        engineh.gl.activeTexture(engineh.gl.TEXTURE0);
-        engineh.gl.bindTexture(engineh.gl.TEXTURE_2D, this.texture);
+            this.meshMat.clearmat();
+            this.meshMat.buildzrotmat(this.rot.z);
+            engineh.gl.uniformMatrix4fv(engineh.gl.getUniformLocation(this.shaderprog, "mrotz"), false, this.meshMat.mat);
 
-        engineh.gl.uniform1i(engineh.gl.getUniformLocation(this.shaderprog, "specular"), 1);
-        engineh.gl.activeTexture(engineh.gl.TEXTURE1);
-        engineh.gl.bindTexture(engineh.gl.TEXTURE_2D, this.spec);
+            this.meshMat.clearmat();
+            this.meshMat.buildScaleMat(this.scale);
+            engineh.gl.uniformMatrix4fv(engineh.gl.getUniformLocation(this.shaderprog, "mscale"), false, this.meshMat.mat);
 
-        engineh.gl.bindBuffer(engineh.gl.ARRAY_BUFFER, this.uBuf);
-        engineh.gl.enableVertexAttribArray(this.uvLoc);
-        engineh.gl.vertexAttribPointer(this.uvLoc, 2, engineh.gl.FLOAT, false, 0, 0);
+            engineh.gl.uniform3fv(engineh.gl.getUniformLocation(this.shaderprog, "lightp"), engineh.lightposes);
+            engineh.gl.uniform3fv(engineh.gl.getUniformLocation(this.shaderprog, "lightc"), engineh.lightcolors);
 
-        engineh.gl.bindBuffer(engineh.gl.ARRAY_BUFFER, this.nBuf);
-        engineh.gl.enableVertexAttribArray(this.normalLoc);
-        engineh.gl.vertexAttribPointer(this.normalLoc, 3, engineh.gl.FLOAT, false, 0, 0);
+            engineh.gl.uniform3f(engineh.gl.getUniformLocation(this.shaderprog, "ppos"), engineh.pos.x, engineh.pos.y, engineh.pos.z);
 
-        engineh.gl.bindBuffer(engineh.gl.ARRAY_BUFFER, this.vBuf);
-        engineh.gl.enableVertexAttribArray(this.positionLoc);
-        engineh.gl.vertexAttribPointer(this.positionLoc, 3, engineh.gl.FLOAT, false, 0, 0);
+            engineh.gl.uniform1i(engineh.gl.getUniformLocation(this.shaderprog, "albedo"), 0);
+            engineh.gl.activeTexture(engineh.gl.TEXTURE0);
+            engineh.gl.bindTexture(engineh.gl.TEXTURE_2D, this.texture);
 
-        engineh.gl.drawArrays(engineh.gl.TRIANGLES, 0, this.totalv);
+            engineh.gl.uniform1i(engineh.gl.getUniformLocation(this.shaderprog, "specular"), 1);
+            engineh.gl.activeTexture(engineh.gl.TEXTURE1);
+            engineh.gl.bindTexture(engineh.gl.TEXTURE_2D, this.spec);
+
+            engineh.gl.uniform1i(engineh.gl.getUniformLocation(this.shaderprog, "shadow"), 2);
+            engineh.gl.activeTexture(engineh.gl.TEXTURE2);
+            engineh.gl.bindTexture(engineh.gl.TEXTURE_2D, engineh.shadowtex);
+
+            engineh.gl.bindBuffer(engineh.gl.ARRAY_BUFFER, this.uBuf);
+            engineh.gl.enableVertexAttribArray(this.uvLoc);
+            engineh.gl.vertexAttribPointer(this.uvLoc, 2, engineh.gl.FLOAT, false, 0, 0);
+
+            engineh.gl.bindBuffer(engineh.gl.ARRAY_BUFFER, this.nBuf);
+            engineh.gl.enableVertexAttribArray(this.normalLoc);
+            engineh.gl.vertexAttribPointer(this.normalLoc, 3, engineh.gl.FLOAT, false, 0, 0);
+
+            engineh.gl.bindBuffer(engineh.gl.ARRAY_BUFFER, this.vBuf);
+            engineh.gl.enableVertexAttribArray(this.positionLoc);
+            engineh.gl.vertexAttribPointer(this.positionLoc, 3, engineh.gl.FLOAT, false, 0, 0);
+
+            engineh.gl.drawArrays(engineh.gl.TRIANGLES, 0, this.totalv);
+        }else if(engineh.isshadowpass === true){
+            engineh.gl.useProgram(engineh.shadowprog);
+
+            this.meshMat.clearmat();
+            this.meshMat.buildperspectivemat(engineh.sfov, 0.1, 100.0, 1);
+            engineh.gl.uniformMatrix4fv(engineh.gl.getUniformLocation(engineh.shadowprog, "proj"), false, this.meshMat.mat);
+
+            this.meshMat.clearmat();
+            this.meshMat.buildtranslatemat(engineh.shadowpos);
+            engineh.gl.uniformMatrix4fv(engineh.gl.getUniformLocation(engineh.shadowprog, "trans"), false, this.meshMat.mat);
+
+            this.meshMat.clearmat();
+            this.meshMat.buildtranslatemat(this.pos);
+            engineh.gl.uniformMatrix4fv(engineh.gl.getUniformLocation(engineh.shadowprog, "mtrans"), false, this.meshMat.mat);
+
+            this.meshMat.clearmat();
+            this.meshMat.buildxrotmat(-engineh.shadowrot.y);
+            engineh.gl.uniformMatrix4fv(engineh.gl.getUniformLocation(engineh.shadowprog, "roty"), false, this.meshMat.mat);
+
+            this.meshMat.clearmat();
+            this.meshMat.buildyrotmat(-engineh.shadowrot.x);
+            engineh.gl.uniformMatrix4fv(engineh.gl.getUniformLocation(engineh.shadowprog, "rotx"), false, this.meshMat.mat);
+
+            this.meshMat.clearmat();
+            this.meshMat.buildxrotmat(this.rot.x);
+            engineh.gl.uniformMatrix4fv(engineh.gl.getUniformLocation(engineh.shadowprog, "mrotx"), false, this.meshMat.mat);
+
+            this.meshMat.clearmat();
+            this.meshMat.buildyrotmat(this.rot.y);
+            engineh.gl.uniformMatrix4fv(engineh.gl.getUniformLocation(engineh.shadowprog, "mroty"), false, this.meshMat.mat);
+
+            this.meshMat.clearmat();
+            this.meshMat.buildzrotmat(this.rot.z);
+            engineh.gl.uniformMatrix4fv(engineh.gl.getUniformLocation(engineh.shadowprog, "mrotz"), false, this.meshMat.mat);
+
+            this.meshMat.clearmat();
+            this.meshMat.buildScaleMat(this.scale);
+            engineh.gl.uniformMatrix4fv(engineh.gl.getUniformLocation(engineh.shadowprog, "mscale"), false, this.meshMat.mat);
+
+            engineh.gl.bindBuffer(engineh.gl.ARRAY_BUFFER, this.vBuf);
+            engineh.gl.enableVertexAttribArray(engineh.positionLoc);
+            engineh.gl.vertexAttribPointer(engineh.positionLoc, 3, engineh.gl.FLOAT, false, 0, 0);
+
+            engineh.gl.drawArrays(engineh.gl.TRIANGLES, 0, this.totalv);
+        }
     }
 }
