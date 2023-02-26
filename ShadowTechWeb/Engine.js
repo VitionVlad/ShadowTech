@@ -171,6 +171,20 @@ class Engine{
         this.gl.renderbufferStorage(this.gl.RENDERBUFFER, this.gl.DEPTH_COMPONENT32F, this.gl.canvas.width, this.gl.canvas.height);
         this.gl.framebufferTexture2D(this.gl.FRAMEBUFFER, this.gl.COLOR_ATTACHMENT0, this.gl.TEXTURE_2D, this.torendertex, 0)
         this.gl.framebufferRenderbuffer(this.gl.FRAMEBUFFER, this.gl.DEPTH_ATTACHMENT, this.gl.RENDERBUFFER, this.depthBuffer);
+        this.lightposes = new Float32Array([
+            0, 0, 0,
+            0, 0, 0,
+            0, 0, 0,
+            0, 0, 0,
+            0, 0, 0,
+        ]);
+        this.lightcolors = new Float32Array([
+            0, 0, 0,
+            0, 0, 0,
+            0, 0, 0,
+            0, 0, 0,
+            0, 0, 0,
+        ]);
     }
     beginFrame(){
         this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, this.mainFramebuffer);
@@ -216,6 +230,7 @@ class Mesh{
         this.totalv = geometry.length/3;
         this.pos = new vec3(0.0, 0.0, 0.0);
         this.rot = new vec3(0.0, 0.0, 0.0);
+        this.scale = new vec3(1.0, 1.0, 1.0);
         this.texture = engineh.gl.createTexture();
         engineh.gl.bindTexture(engineh.gl.TEXTURE_2D, this.texture);
         engineh.gl.texImage2D(engineh.gl.TEXTURE_2D, 0, engineh.gl.RGBA, resx, resy, 0, engineh.gl.RGBA, engineh.gl.UNSIGNED_BYTE, albedo);
@@ -223,6 +238,14 @@ class Mesh{
         engineh.gl.texParameteri(engineh.gl.TEXTURE_2D, engineh.gl.TEXTURE_WRAP_S, engineh.gl.MIRRORED_REPEAT);
         engineh.gl.texParameteri(engineh.gl.TEXTURE_2D, engineh.gl.TEXTURE_WRAP_T, engineh.gl.MIRRORED_REPEAT);
         engineh.gl.bindTexture(engineh.gl.TEXTURE_2D, null);
+    }
+    setLight(num, pos, color){
+        this.lightposes[num*3] = pos.x;
+        this.lightposes[num*3+1] = pos.y;
+        this.lightposes[num*3+2] = pos.z;
+        this.lightcolors[num*3] = color.x;
+        this.lightcolors[num*3+1] = color.y;
+        this.lightcolors[num*3+2] = color.z;
     }
     Draw(engineh){
         engineh.gl.useProgram(this.shaderprog);
@@ -236,12 +259,35 @@ class Mesh{
         engineh.gl.uniformMatrix4fv(engineh.gl.getUniformLocation(this.shaderprog, "trans"), false, this.meshMat.mat);
 
         this.meshMat.clearmat();
+        this.meshMat.buildtranslatemat(this.pos);
+        engineh.gl.uniformMatrix4fv(engineh.gl.getUniformLocation(this.shaderprog, "mtrans"), false, this.meshMat.mat);
+
+        this.meshMat.clearmat();
         this.meshMat.buildxrotmat(-engineh.rot.y);
         engineh.gl.uniformMatrix4fv(engineh.gl.getUniformLocation(this.shaderprog, "roty"), false, this.meshMat.mat);
 
         this.meshMat.clearmat();
         this.meshMat.buildyrotmat(-engineh.rot.x);
         engineh.gl.uniformMatrix4fv(engineh.gl.getUniformLocation(this.shaderprog, "rotx"), false, this.meshMat.mat);
+
+        this.meshMat.clearmat();
+        this.meshMat.buildxrotmat(this.rot.x);
+        engineh.gl.uniformMatrix4fv(engineh.gl.getUniformLocation(this.shaderprog, "mrotx"), false, this.meshMat.mat);
+
+        this.meshMat.clearmat();
+        this.meshMat.buildyrotmat(this.rot.y);
+        engineh.gl.uniformMatrix4fv(engineh.gl.getUniformLocation(this.shaderprog, "mroty"), false, this.meshMat.mat);
+
+        this.meshMat.clearmat();
+        this.meshMat.buildzrotmat(this.rot.z);
+        engineh.gl.uniformMatrix4fv(engineh.gl.getUniformLocation(this.shaderprog, "mrotz"), false, this.meshMat.mat);
+
+        this.meshMat.clearmat();
+        this.meshMat.buildScaleMat(this.scale);
+        engineh.gl.uniformMatrix4fv(engineh.gl.getUniformLocation(this.shaderprog, "mscale"), false, this.meshMat.mat);
+
+        engineh.gl.uniform3fv(engineh.gl.getUniformLocation(this.shaderprog, "lightp"), engineh.lightposes);
+        engineh.gl.uniform3fv(engineh.gl.getUniformLocation(this.shaderprog, "lightc"), engineh.lightcolors);
 
         engineh.gl.uniform1i(engineh.gl.getUniformLocation(this.shaderprog, "albedo"), 0);
         engineh.gl.activeTexture(engineh.gl.TEXTURE0);

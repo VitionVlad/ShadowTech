@@ -5,6 +5,8 @@ in vec2 xy;
 in vec3 norm;
 in float dep;
 uniform sampler2D albedo;
+uniform vec3 lightp[5];
+uniform vec3 lightc[5];
 void main(){
     color = vec4(texture(albedo, xy).rgb, 1);
 }
@@ -18,11 +20,20 @@ uniform mat4 proj;
 uniform mat4 trans;
 uniform mat4 rotx;
 uniform mat4 roty;
+
+uniform mat4 mtrans;
+uniform mat4 mrotx;
+uniform mat4 mroty;
+uniform mat4 mrotz;
+uniform mat4 mscale;
+
 out vec2 xy;
 out vec3 norm;
 out float dep;
 void main(){
-    vec4 fin = proj * rotx * roty * trans * vec4(positions, 1.0);
+    vec4 fin = mscale * vec4(positions, 1.0);
+    fin = mtrans * mrotx * mroty * mrotz * fin;
+    fin = proj * rotx * roty * trans * fin;
     gl_Position = fin;
     dep = fin.z;
     xy = uv;
