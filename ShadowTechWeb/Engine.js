@@ -124,6 +124,12 @@ class Engine{
         gl.enable(gl.DEPTH_TEST);
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
         this.gl = gl;
+        const ext = this.gl.getExtension('WEBGL_depth_texture');
+        this.dptex = true;
+        if (!ext) {
+            this.dptex = false;
+            console.log("depth texture extension missing");
+        }
         this.fov = 120;
         this.pos = new vec3(0.0, 0.0, 0.0);
         this.rot = new vec2(0.0, 0.0);
@@ -160,16 +166,11 @@ class Engine{
         this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_MIN_FILTER, this.gl.LINEAR);
         this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_WRAP_S, this.gl.CLAMP_TO_EDGE);
         this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_WRAP_T, this.gl.CLAMP_TO_EDGE);
-        this.torenderdtex = this.gl.createTexture();
-        this.gl.bindTexture(this.gl.TEXTURE_2D, this.torenderdtex);
-        this.gl.texImage2D(this.gl.TEXTURE_2D, 0, this.gl.DEPTH_COMPONENT32F, this.gl.canvas.width, this.gl.canvas.height, 0, this.gl.DEPTH_COMPONENT, this.gl.FLOAT, null);
-        this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_MIN_FILTER, this.gl.LINEAR);
-        this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_WRAP_S, this.gl.CLAMP_TO_EDGE);
-        this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_WRAP_T, this.gl.CLAMP_TO_EDGE);
-        this.gl.bindTexture(this.gl.TEXTURE_2D, this.torendertex);
-        //this.gl.bindTexture(this.gl.TEXTURE_2D, null);
-        this.gl.framebufferTexture2D(this.gl.FRAMEBUFFER, this.gl.COLOR_ATTACHMENT0, this.gl.TEXTURE_2D, this.torendertex, 0);
-        this.gl.framebufferTexture2D(this.gl.FRAMEBUFFER, this.gl.DEPTH_ATTACHMENT, this.gl.TEXTURE_2D, this.torenderdtex, 0);
+        this.depthBuffer = this.gl.createRenderbuffer();
+        this.gl.bindRenderbuffer(this.gl.RENDERBUFFER, this.depthBuffer);
+        this.gl.renderbufferStorage(this.gl.RENDERBUFFER, this.gl.DEPTH_COMPONENT32F, this.gl.canvas.width, this.gl.canvas.height);
+        this.gl.framebufferTexture2D(this.gl.FRAMEBUFFER, this.gl.COLOR_ATTACHMENT0, this.gl.TEXTURE_2D, this.torendertex, 0)
+        this.gl.framebufferRenderbuffer(this.gl.FRAMEBUFFER, this.gl.DEPTH_ATTACHMENT, this.gl.RENDERBUFFER, this.depthBuffer);
     }
     beginFrame(){
         this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, this.mainFramebuffer);
@@ -184,10 +185,9 @@ class Engine{
         this.gl.clearColor(0.0, 0.0, 0.0, 1.0);
         this.gl.useProgram(this.finalprog);
 
-        //this.gl.activeTexture(this.gl.TEXTURE0);
-        //this.gl.bindTexture(this.gl.TEXTURE_2D, this.torendertex);
         this.gl.uniform1i(this.gl.getUniformLocation(this.finalprog, "maintex"), 0);
-        //this.gl.bindTexture(this.gl.TEXTURE_2D, null);
+        this.gl.activeTexture(this.gl.TEXTURE0);
+        this.gl.bindTexture(this.gl.TEXTURE_2D, this.torendertex);
 
         this.gl.drawArrays(this.gl.TRIANGLE_STRIP, 0, 6);
         requestAnimationFrame(framefunc);

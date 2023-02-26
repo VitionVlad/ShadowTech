@@ -3,6 +3,7 @@ precision mediump float;
 layout (location = 0) out vec4 color;
 in vec2 xy;
 in vec3 norm;
+in float dep;
 void main(){
     color = vec4(norm, 1);
 }
@@ -18,8 +19,11 @@ uniform mat4 rotx;
 uniform mat4 roty;
 out vec2 xy;
 out vec3 norm;
+out float dep;
 void main(){
-    gl_Position = proj * rotx * roty * trans * vec4(positions, 1.0);
+    vec4 fin = proj * rotx * roty * trans * vec4(positions, 1.0);
+    gl_Position = fin;
+    dep = fin.z;
     xy = uv;
     norm = normals;
 }
