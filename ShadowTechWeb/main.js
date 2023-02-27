@@ -88,12 +88,12 @@ out vec3 posit;
 out vec4 str;
 void main(){
     vec4 fin = mscale * vec4(positions, 1.0);
-    fin = mtrans * mrotx * mroty * mrotz * fin;
-    fin = proj * rotx * roty * trans * fin;
+    fin = mtrans * mroty * mrotx * mrotz * fin;
+    fin = proj * roty * rotx * trans * fin;
     gl_Position = fin;
     fin = mscale * vec4(positions, 1.0);
-    fin = mtrans * mrotx * mroty * mrotz * fin;
-    fin = sproj * srotx * sroty * strans * fin;
+    fin = mtrans * mroty * mrotx * mrotz * fin;
+    fin = sproj * sroty * srotx * strans * fin;
     str = fin;
     dep = fin.z;
     xy = uv;
@@ -102,7 +102,16 @@ void main(){
 }
 `;
 
+var locked = false;
+
+function requestPointerLockWithUnadjustedMovement() {
+    const promise = document.getElementById("glCanvas").requestPointerLock({
+      unadjustedMovement: true,
+    });
+}
+
 function main(){
+    document.body.style.cursor = 'none';
     var speed = 0.001;
     var canvas;
     var gl;
@@ -140,25 +149,21 @@ function main(){
             if (event.key == "e") {
                 eng.pos.y -= speed;
             }
-            if (event.key == "ArrowUp") {
-                eng.rot.y -= speed/10;
-            }
-            if (event.key == "ArrowDown") {
-                eng.rot.y += speed/10;
-            }
-            if (event.key == "ArrowLeft") {
-                eng.rot.x -= speed/10;
-            }
-            if (event.key == "ArrowRight") {
-                eng.rot.x += speed/10;
-            }
         }, true);
     }
+    function mousecallback(){
+        document.addEventListener("mousemove", function(event){
+            eng.rot.x = (event.clientX / (eng.gl.canvas.width/2) - 1.0);
+            eng.rot.y = (event.clientY / (eng.gl.canvas.height/2) - 1.0);
+        }, false);     
+    }
+    document.addEventListener('pointerlockchange', lockChangeAlert, false);
     drawFrame();
     function drawFrame(){
         eng.beginShadowPass();
         mesh.Draw(eng);
         eng.beginFrame();
+        mousecallback();
         key_callback();
         
         mesh.Draw(eng);

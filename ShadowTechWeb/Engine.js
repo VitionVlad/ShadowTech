@@ -181,8 +181,8 @@ class Engine{
         uniform mat4 mscale;
         void main(){
             vec4 fin = mscale * vec4(positions, 1.0);
-            fin = mtrans * mrotx * mroty * mrotz * fin;
-            fin = proj * rotx * roty * trans * fin;
+            fin = mtrans * mroty * mrotx * mrotz * fin;
+            fin = proj * roty * rotx * trans * fin;
             gl_Position = fin;
             dep = fin.z/fin.w;
         }
