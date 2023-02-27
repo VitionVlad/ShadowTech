@@ -184,7 +184,7 @@ class Engine{
             fin = mtrans * mrotx * mroty * mrotz * fin;
             fin = proj * rotx * roty * trans * fin;
             gl_Position = fin;
-            dep = fin.z;
+            dep = fin.z/fin.w;
         }
         `;
         this.finalprog = this.initShaderProgram(this.vsSource, this.fsSource);
@@ -323,7 +323,7 @@ class Mesh{
             engineh.gl.useProgram(this.shaderprog);
 
             this.meshMat.clearmat();
-            this.meshMat.buildperspectivemat(engineh.sfov, 0.1, 100.0, engineh.gl.canvas.width/engineh.gl.canvas.height);
+            this.meshMat.buildperspectivemat(engineh.sfov, 0.1, 100.0, 1);
             engineh.gl.uniformMatrix4fv(engineh.gl.getUniformLocation(this.shaderprog, "sproj"), false, this.meshMat.mat);
 
             this.meshMat.clearmat();

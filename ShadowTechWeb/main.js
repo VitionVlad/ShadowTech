@@ -16,6 +16,22 @@ const float constant = 1.0;
 const float linear = 0.09;
 const float quadratic = 0.032;
 
+in vec4 str;
+
+float shadowMapping(){
+  vec3 projected = str.xyz / str.w;
+  float fshadow = 0.0f;
+  if(projected.z <= 1.0f){ 
+   projected.xy = (projected.xy + 1.0f)/2.0f; 
+   float closestDepth = texture(shadow, projected.xy).r; 
+   float currentDepth = projected.z; 
+   if(currentDepth - 0.005 > closestDepth){ 
+    fshadow+=1.0f;
+   } 
+  } 
+  return fshadow; 
+} 
+
 void main(){
     vec3 finalcolor = vec3(0);
     vec3 normal = normalize(norm);
@@ -39,7 +55,7 @@ void main(){
         diffuse  *= attenuation;
         specu *= attenuation;     
 
-        finalcolor += (ambient + diffuse + specu) * texture(albedo, xy).rgb;
+        finalcolor += ((diffuse + specu)*(1.0-shadowMapping())+ambient) * texture(albedo, xy).rgb;
     }
     color = vec4(finalcolor, 1);
 }
@@ -69,11 +85,16 @@ out vec2 xy;
 out vec3 norm;
 out float dep;
 out vec3 posit;
+out vec4 str;
 void main(){
     vec4 fin = mscale * vec4(positions, 1.0);
     fin = mtrans * mrotx * mroty * mrotz * fin;
     fin = proj * rotx * roty * trans * fin;
     gl_Position = fin;
+    fin = mscale * vec4(positions, 1.0);
+    fin = mtrans * mrotx * mroty * mrotz * fin;
+    fin = sproj * srotx * sroty * strans * fin;
+    str = fin;
     dep = fin.z;
     xy = uv;
     norm = normals;
@@ -90,8 +111,9 @@ function main(){
     eng.pos.y = -1.7;
     eng.rot.x = 0.0;
     eng.rot.y = 0.0;
+    eng.sfov = 110;
     eng.shadowpos.z = -1.0;
-    eng.shadowpos.y = -1.0;
+    eng.shadowpos.y = -1.7;
     eng.setLight(0, new vec3(0, 2, 0), new vec3(1, 1, 1));
     var mesh = new Mesh(susv, susn, susu, fshader, vshader, eng, tex, tex, texx, texy);
     function key_callback(){
