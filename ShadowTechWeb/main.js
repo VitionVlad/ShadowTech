@@ -147,9 +147,13 @@ function main(){
     }
     function mousecallback(){
         document.addEventListener("mousemove", function(event){
-            eng.rot.x = (event.clientX / (eng.gl.canvas.width/2) - 1.0);
-            eng.rot.y = (event.clientY / (eng.gl.canvas.height/2) - 1.0);
+            eng.rot.x += ((event.movementX) / (eng.gl.canvas.width/2))/200;
+            eng.rot.y += ((event.movementY) / (eng.gl.canvas.height/2))/200;
         }, false);     
+        document.getElementById("glCanvas").onclick = function(){
+            document.getElementById("glCanvas").requestPointerLock();
+            document.getElementById("glCanvas").requestFullscreen();
+        };
     }
     drawFrame();
     function drawFrame(){
