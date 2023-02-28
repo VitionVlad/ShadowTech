@@ -104,12 +104,6 @@ void main(){
 
 var locked = false;
 
-function requestPointerLockWithUnadjustedMovement() {
-    const promise = document.getElementById("glCanvas").requestPointerLock({
-      unadjustedMovement: true,
-    });
-}
-
 function main(){
     document.body.style.cursor = 'none';
     var speed = 0.001;
@@ -157,7 +151,6 @@ function main(){
             eng.rot.y = (event.clientY / (eng.gl.canvas.height/2) - 1.0);
         }, false);     
     }
-    document.addEventListener('pointerlockchange', lockChangeAlert, false);
     drawFrame();
     function drawFrame(){
         eng.beginShadowPass();
