@@ -149,6 +149,12 @@ function main(){
         document.addEventListener("mousemove", function(event){
             eng.rot.x += ((event.movementX) / (eng.gl.canvas.width/2))/200;
             eng.rot.y += ((event.movementY) / (eng.gl.canvas.height/2))/200;
+            if(eng.rot.y > 1.5){
+                eng.rot.y = 1.5;
+            }
+            if(eng.rot.y < -1.5){
+                eng.rot.y = -1.5;
+            }
         }, false);     
         document.getElementById("glCanvas").onclick = function(){
             document.getElementById("glCanvas").requestPointerLock();

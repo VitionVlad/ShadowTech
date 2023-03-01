@@ -118,6 +118,8 @@ class Engine{
     }
     constructor(gl, canvas){
         canvas = document.querySelector("#glCanvas");
+        canvas.width = window.screen.width;
+        canvas.height = window.screen.height;
         gl = canvas.getContext("webgl2");
         gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
         gl.clearColor(0.0, 0.0, 0.0, 1.0);
