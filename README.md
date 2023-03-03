@@ -8,5 +8,5 @@ this is a simple tool to convert obj file to java file, ready for use, works rea
 # ppmtoClass  
 same thing as objtoclass but for ppm images
 # web version
-web version have already shadowmap support!
-![Снимок экрана от 2023-02-27 20-37-00](https://user-images.githubusercontent.com/48290199/221653490-9f019a89-4961-48df-a53d-d1ec5192675e.png)
+web version have already shadowmap support! and collision system!
+![Снимок экрана от 2023-03-03 21-33-33](https://user-images.githubusercontent.com/48290199/222810440-471295d9-fcd9-485c-a7e4-ed0c8fcdd772.png)
