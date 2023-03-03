@@ -25,7 +25,7 @@ float shadowMapping(){
    projected.xy = (projected.xy + 1.0f)/2.0f; 
    float closestDepth = texture(shadow, projected.xy).r; 
    float currentDepth = projected.z; 
-   if(currentDepth - 0.005 > closestDepth){ 
+   if(currentDepth > closestDepth){ 
     fshadow+=1.0f;
    } 
   } 
@@ -106,19 +106,23 @@ var locked = false;
 
 function main(){
     document.body.style.cursor = 'none';
-    var speed = 0.001;
+    const speed = 0.0001;
+    const sensivity = 500;
     var canvas;
     var gl;
     var eng = new Engine(gl, canvas);
     eng.pos.z = -1.0;
-    eng.pos.y = -1.7;
+    eng.pos.y = -3.7;
     eng.rot.x = 0.0;
     eng.rot.y = 0.0;
     eng.sfov = 110;
     eng.shadowpos.z = -1.0;
     eng.shadowpos.y = -1.7;
-    eng.setLight(0, new vec3(0, 2, 0), new vec3(1, 1, 1));
-    var mesh = new Mesh(susv, susn, susu, fshader, vshader, eng, tex, tex, texx, texy);
+    eng.setLight(0, new vec3(0, 1.7, 2), new vec3(1, 1, 1));
+    var mesh = new Mesh(susv, susn, susu, fshader, vshader, eng, tex, tex, texx, texy, true);
+    mesh.pos.y = 1;
+    mesh.pos.z = -3;
+    var mesh2 = new Mesh(planev, planen, planeu, fshader, vshader, eng, tex, tex, texx, texy, true);
     function key_callback(){
         document.addEventListener('keydown', function(event) {
             if (event.key == "w") {
@@ -137,18 +141,12 @@ function main(){
                 eng.pos.x -= Math.cos(eng.rot.y) * Math.cos(eng.rot.x) * speed;
                 eng.pos.z -= Math.cos(eng.rot.y) * Math.sin(eng.rot.x) * speed;
             }
-            if (event.key == "q") {
-                eng.pos.y += speed;
-            }
-            if (event.key == "e") {
-                eng.pos.y -= speed;
-            }
         }, true);
     }
     function mousecallback(){
         document.addEventListener("mousemove", function(event){
-            eng.rot.x += ((event.movementX) / (eng.gl.canvas.width/2))/200;
-            eng.rot.y += ((event.movementY) / (eng.gl.canvas.height/2))/200;
+            eng.rot.x += ((event.movementX) / (eng.gl.canvas.width/2))/sensivity;
+            eng.rot.y += ((event.movementY) / (eng.gl.canvas.height/2))/sensivity;
             if(eng.rot.y > 1.5){
                 eng.rot.y = 1.5;
             }
@@ -162,16 +160,21 @@ function main(){
         };
     }
     drawFrame();
-    function drawFrame(){
+    function drawFrame(now){
         eng.beginShadowPass();
-        mesh.Draw(eng);
-        eng.beginFrame();
-        mousecallback();
-        key_callback();
         
         mesh.Draw(eng);
+        mesh2.Draw(eng);
 
-        eng.endFrame(drawFrame);
+        eng.beginFrame();
+        eng.pos.y += 0.01;
+        mousecallback();
+        key_callback();
+
+        mesh2.Draw(eng);
+        mesh.Draw(eng);
+
+        eng.endFrame(drawFrame, now);
     }
 }
 

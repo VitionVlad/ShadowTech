@@ -8,7 +8,7 @@ class vec2{
 
 class vec3{
     constructor(x, y, z){
-        this.x  = x;
+        this.x = x;
         this.y = y;
         this.z = z;
     }
@@ -91,6 +91,9 @@ class mat4{
 }
 
 class Engine{
+    between(x, min, max) {
+        return x >= min && x <= max;
+    }
     loadShader(gl, type, source) {
         const shader = gl.createShader(type);
         gl.shaderSource(shader, source);
@@ -124,6 +127,7 @@ class Engine{
         gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
         gl.clearColor(0.0, 0.0, 0.0, 1.0);
         gl.enable(gl.DEPTH_TEST);
+        gl.enable(gl.CULL_FACE);
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
         this.gl = gl;
         const ext = this.gl.getExtension('WEBGL_depth_texture');
@@ -134,6 +138,8 @@ class Engine{
         }
         this.fov = 120;
         this.pos = new vec3(0.0, 0.0, 0.0);
+        this.lpos = new vec3(0.0, 0.0, 0.0);
+        this.camsize = new vec3(0.1, 1.7, 0.1);
         this.rot = new vec2(0.0, 0.0);
         this.fsSource = `#version 300 es
         precision mediump float;
@@ -239,6 +245,24 @@ class Engine{
             0, 0, 0,
             0, 0, 0,
         ]);
+        this.then = 0;
+        this.fps = 0;
+    }
+    aabbPlayer(meshPos, meshBorder, enableColision){
+        var toreturn  = false;
+        if(this.between(-this.pos.x, meshPos.x - meshBorder.x - this.camsize.x, meshPos.x + meshBorder.x + this.camsize.x) && this.between(-this.pos.y, meshPos.y - meshBorder.y, meshBorder.y + meshPos.y + this.camsize.y) && this.between(-this.pos.z, meshPos.z - meshBorder.z - this.camsize.z, meshBorder.z + meshPos.z + this.camsize.z)){
+            if(enableColision == true){
+                this.pos.y = this.lpos.y;
+            }
+            toreturn = true;
+            if (this.between(-this.pos.y, meshPos.y - meshBorder.y, meshBorder.y + meshPos.y + this.camsize.y / 2)){
+                if(enableColision == true){
+                    this.pos.x = this.lpos.x;
+                    this.pos.z = this.lpos.z;
+                }
+            }
+        }
+        return toreturn;
     }
     setLight(num, pos, color){
         this.lightposes[num*3] = pos.x;
@@ -254,6 +278,7 @@ class Engine{
         this.gl.viewport(0, 0, this.shadowmapresolution, this.shadowmapresolution);
         this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
         this.gl.clearColor(0.0, 0.0, 0.0, 1.0);
+        this.gl.cullFace(this.gl.FRONT); 
     }
     beginFrame(){
         this.isshadowpass = false;
@@ -261,8 +286,9 @@ class Engine{
         this.gl.viewport(0, 0, this.gl.canvas.width, this.gl.canvas.height);
         this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
         this.gl.clearColor(0.0, 0.0, 0.0, 1.0);
+        this.gl.cullFace(this.gl.BACK); 
     }
-    endFrame(framefunc){
+    endFrame(framefunc, now){
         this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, null);
         this.gl.viewport(0, 0, this.gl.canvas.width, this.gl.canvas.height);
         this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
@@ -278,12 +304,34 @@ class Engine{
         this.gl.bindTexture(this.gl.TEXTURE_2D, this.shadowtex);
 
         this.gl.drawArrays(this.gl.TRIANGLE_STRIP, 0, 6);
+        this.lpos.x = this.pos.x;
+        this.lpos.y = this.pos.y;
+        this.lpos.z = this.pos.z;
+        now *= 0.001;
+        const delta =  now - this.then;
+        this.then = now;
+        this.fps = 1 / delta;
         requestAnimationFrame(framefunc);
     }
 }
 
 class Mesh{
-    constructor(geometry, normal, uv, fshader, vshader, engineh, albedo, specular, resx, resy){
+    vecmatmult(vec, mat){
+        var tof = new vec3(0.0, 0.0, 0.0);
+        tof.x = vec.x * mat.mat[0] + vec.y * mat.mat[4] + vec.z * mat.mat[8] + mat.mat[12];
+        tof.y = vec.x * mat.mat[1] + vec.y * mat.mat[5] + vec.z * mat.mat[9] + mat.mat[13];
+        tof.z = vec.x * mat.mat[2] + vec.y * mat.mat[6] + vec.z * mat.mat[10] + mat.mat[14];
+        var w = mat.mat[3] + mat.mat[7] +  mat.mat[11] +  mat.mat[15];
+        tof.x /= w;
+        tof.y /= w;
+        tof.z /= w;
+        vec.x = tof.x;
+        vec.y = tof.y;
+        vec.z = tof.z;
+    }
+    constructor(geometry, normal, uv, fshader, vshader, engineh, albedo, specular, resx, resy, collision){
+        this.collision = collision;
+        this.vt = geometry;
         this.vBuf = engineh.gl.createBuffer();
         engineh.gl.bindBuffer(engineh.gl.ARRAY_BUFFER, this.vBuf);
         engineh.gl.bufferData(engineh.gl.ARRAY_BUFFER, geometry, engineh.gl.STATIC_DRAW);
@@ -319,9 +367,45 @@ class Mesh{
         engineh.gl.texParameteri(engineh.gl.TEXTURE_2D, engineh.gl.TEXTURE_WRAP_S, engineh.gl.MIRRORED_REPEAT);
         engineh.gl.texParameteri(engineh.gl.TEXTURE_2D, engineh.gl.TEXTURE_WRAP_T, engineh.gl.MIRRORED_REPEAT);
         engineh.gl.bindTexture(engineh.gl.TEXTURE_2D, null);
+        this.aabb = new vec3(0.0, 0.0, 0.0);
+        this.interacting = false;
+    }
+    CalcAABB(){
+        this.aabb.x = 0;
+        this.aabb.y = 0;
+        this.aabb.z = 0;
+        for(var i = 0; i!= this.vt.length; i+=3){
+            var ver = new vec3(0.0, 0.0, 0.0);
+            ver.x = this.vt[i];
+            ver.y = this.vt[i+1];
+            ver.z = this.vt[i+2];
+            this.meshMat.clearmat();
+            this.meshMat.buildScaleMat(this.scale);
+            this.vecmatmult(ver, this.meshMat);
+            this.meshMat.clearmat();
+            this.meshMat.buildxrotmat(this.rot.x);
+            this.vecmatmult(ver, this.meshMat);
+            this.meshMat.clearmat();
+            this.meshMat.buildyrotmat(this.rot.y);
+            this.vecmatmult(ver, this.meshMat);
+            this.meshMat.clearmat();
+            this.meshMat.buildzrotmat(this.rot.z);
+            this.vecmatmult(ver, this.meshMat);
+            if(Math.abs(ver.x) >= this.aabb.x ){
+                this.aabb.x = Math.abs(ver.x);
+            }
+            if(Math.abs(ver.y) >= this.aabb.y ){
+                this.aabb.y = Math.abs(ver.y);
+            }
+            if(Math.abs(ver.z) >= this.aabb.z ){
+                this.aabb.z = Math.abs(ver.z);
+            }
+        }
     }
     Draw(engineh){
         if(engineh.isshadowpass === false){
+            this.CalcAABB();
+            this.interacting = engineh.aabbPlayer(this.pos, this.aabb, this.collision);
             engineh.gl.useProgram(this.shaderprog);
 
             this.meshMat.clearmat();
