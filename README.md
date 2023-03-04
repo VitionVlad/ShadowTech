@@ -10,3 +10,5 @@ same thing as objtoclass but for ppm images
 # web version
 web version have already shadowmap support! and collision system!
 ![Снимок экрана от 2023-03-03 21-33-33](https://user-images.githubusercontent.com/48290199/222810440-471295d9-fcd9-485c-a7e4-ed0c8fcdd772.png)
+it is even possible to load sponza scene, but it works laggy, but it works (final model file weights like 50mb)
+![Снимок экрана от 2023-03-04 10-12-34](https://user-images.githubusercontent.com/48290199/222885009-94645505-879b-4f8f-8575-cc90062b9c02.png)
