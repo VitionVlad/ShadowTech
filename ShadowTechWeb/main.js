@@ -108,9 +108,7 @@ function main(){
     document.body.style.cursor = 'none';
     const speed = 0.0001;
     const sensivity = 500;
-    var canvas;
-    var gl;
-    var eng = new Engine(gl, canvas);
+    var eng = new Engine();
     eng.pos.z = -1.0;
     eng.pos.y = -3.7;
     eng.rot.x = 0.0;
@@ -121,7 +119,7 @@ function main(){
     eng.setLight(0, new vec3(0, 1.7, 2), new vec3(1, 1, 1));
     var mesh = new Mesh(susv, susn, susu, fshader, vshader, eng, tex, tex, texx, texy, true);
     mesh.pos.y = 1;
-    mesh.pos.z = -3;
+    mesh.pos.z = -1.5;
     var mesh2 = new Mesh(planev, planen, planeu, fshader, vshader, eng, tex, tex, texx, texy, true);
     function key_callback(){
         document.addEventListener('keydown', function(event) {
@@ -167,7 +165,6 @@ function main(){
         mesh2.Draw(eng);
 
         eng.beginFrame();
-        eng.pos.y += 0.01;
         mousecallback();
         key_callback();
 

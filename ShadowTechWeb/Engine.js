@@ -119,17 +119,16 @@ class Engine{
         }
         return shaderProgram;
     }
-    constructor(gl, canvas){
-        canvas = document.querySelector("#glCanvas");
-        canvas.width = window.screen.width;
-        canvas.height = window.screen.height;
-        gl = canvas.getContext("webgl2");
-        gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
-        gl.clearColor(0.0, 0.0, 0.0, 1.0);
-        gl.enable(gl.DEPTH_TEST);
-        gl.enable(gl.CULL_FACE);
-        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-        this.gl = gl;
+    constructor(){
+        this.canvas = document.querySelector("#glCanvas");
+        this.canvas.width = window.screen.width;
+        this.canvas.height = window.screen.height;
+        this.gl = this.canvas.getContext("webgl2");
+        this.gl.viewport(0, 0, this.gl.canvas.width, this.gl.canvas.height);
+        this.gl.clearColor(0.0, 0.0, 0.0, 1.0);
+        this.gl.enable(this.gl.DEPTH_TEST);
+        this.gl.enable(this.gl.CULL_FACE);
+        this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
         const ext = this.gl.getExtension('WEBGL_depth_texture');
         this.dptex = true;
         if (!ext) {
@@ -216,7 +215,7 @@ class Engine{
         this.sfov = 90;
         this.isshadowpass = false;
         this.shadowprog = this.initShaderProgram(this.vsShadow, this.fsShadow);
-        this.positionLoc = gl.getAttribLocation(this.shadowprog, "positions");
+        this.positionLoc = this.gl.getAttribLocation(this.shadowprog, "positions");
         this.shadowfr = this.gl.createFramebuffer();
         this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, this.shadowfr);
         this.shadowtex = this.gl.createTexture();
@@ -247,6 +246,8 @@ class Engine{
         ]);
         this.then = 0;
         this.fps = 0;
+        this.playerphysics = true;
+        this.playerforce = 0.01;
     }
     aabbPlayer(meshPos, meshBorder, enableColision){
         var toreturn  = false;
@@ -276,17 +277,20 @@ class Engine{
         this.isshadowpass = true;
         this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, this.shadowfr);
         this.gl.viewport(0, 0, this.shadowmapresolution, this.shadowmapresolution);
+        this.gl.clearColor(1.0, 1.0, 1.0, 1.0);
         this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
-        this.gl.clearColor(0.0, 0.0, 0.0, 1.0);
         this.gl.cullFace(this.gl.FRONT); 
     }
     beginFrame(){
         this.isshadowpass = false;
         this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, this.mainFramebuffer);
         this.gl.viewport(0, 0, this.gl.canvas.width, this.gl.canvas.height);
-        this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
         this.gl.clearColor(0.0, 0.0, 0.0, 1.0);
+        this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
         this.gl.cullFace(this.gl.BACK); 
+        if(this.playerphysics === true){
+            this.pos.y += this.playerforce;
+        }
     }
     endFrame(framefunc, now){
         this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, null);
