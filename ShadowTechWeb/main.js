@@ -6,11 +6,13 @@ in vec3 norm;
 in float dep;
 uniform sampler2D albedo;
 uniform sampler2D specular;
+uniform sampler2D normal;
 uniform sampler2D shadow;
 uniform vec3 lightp[5];
 uniform vec3 lightc[5];
 uniform vec3 ppos;
 in vec3 posit;
+in mat3 tbn;
 
 const float constant = 1.0;
 const float linear = 0.09;
@@ -34,17 +36,17 @@ float shadowMapping(){
 
 void main(){
     vec3 finalcolor = vec3(0);
-    vec3 normal = normalize(norm);
+    vec3 normal = normalize(texture(normal, xy).rgb*2.0 - 1.0);
     for(int i = 0; i!=5; i++){
-        float ambientStrength = 0.1;
+        float ambientStrength = 0.2;
         vec3 ambient = ambientStrength * lightc[i];
 
-        vec3 lightDir = normalize(lightp[i] - posit);
+        vec3 lightDir = tbn * normalize(lightp[i] - posit);
         float diff = max(dot(normal, lightDir), 0.0);
         vec3 diffuse = diff * lightc[i];
 
         float specularStrength = texture(specular, xy).r;
-        vec3 viewDir = normalize(vec3(-ppos.x, -ppos.y, -ppos.z) - posit);
+        vec3 viewDir = tbn * normalize(vec3(-ppos.x, -ppos.y, -ppos.z) - posit);
         vec3 reflectDir = reflect(-lightDir, normal);  
         float spec = pow(max(dot(viewDir, reflectDir), 0.0), 32.0);
         vec3 specu = specularStrength * spec * lightc[i];  
@@ -62,9 +64,12 @@ void main(){
 `;
 
 const vshader = `#version 300 es
+
 in vec3 positions;
 in vec3 normals;
 in vec2 uv;
+in vec3 ntangent;
+
 uniform mat4 proj;
 uniform mat4 trans;
 uniform mat4 rotx;
@@ -86,6 +91,7 @@ out vec3 norm;
 out float dep;
 out vec3 posit;
 out vec4 str;
+out mat3 tbn;
 void main(){
     vec4 fin = mscale * vec4(positions, 1.0);
     fin = mtrans * mroty * mrotx * mrotz * fin;
@@ -99,6 +105,13 @@ void main(){
     xy = uv;
     norm = normals;
     posit = positions;
+    vec3 tan = vec3(normals.z, normals.x, normals.y);
+    mat3 vTBN = transpose(mat3(
+        normalize(ntangent),
+        normalize(cross(normals, ntangent)),
+        normalize(normals)
+    ));
+    tbn = vTBN;
 }
 `;
 
@@ -109,18 +122,19 @@ function main(){
     const speed = 0.0001;
     const sensivity = 500;
     var eng = new Engine();
+    //eng.playerphysics = false;
     eng.pos.z = -1.0;
-    eng.pos.y = -3.7;
+    eng.pos.y = -2.7;
     eng.rot.x = 0.0;
     eng.rot.y = 0.0;
     eng.sfov = 110;
     eng.shadowpos.z = -1.0;
     eng.shadowpos.y = -1.7;
-    eng.setLight(0, new vec3(0, 1.7, 2), new vec3(1, 1, 1));
-    var mesh = new Mesh(susv, susn, susu, fshader, vshader, eng, tex, tex, texx, texy, true);
+    eng.setLight(0, new vec3(0, 3.7, 2), new vec3(1, 1, 1));
+    var mesh = new Mesh(susv, susn, susu, fshader, vshader, eng, tex, spec, norm, texx, texy, true);
     mesh.pos.y = 1;
     mesh.pos.z = -1.5;
-    var mesh2 = new Mesh(planev, planen, planeu, fshader, vshader, eng, tex, tex, texx, texy, true);
+    var mesh2 = new Mesh(planev, planen, planeu, fshader, vshader, eng, tex, spec, norm, texx, texy, true);
     function key_callback(){
         document.addEventListener('keydown', function(event) {
             if (event.key == "w") {
@@ -168,8 +182,8 @@ function main(){
         mousecallback();
         key_callback();
 
-        mesh2.Draw(eng);
         mesh.Draw(eng);
+        mesh2.Draw(eng);
 
         eng.endFrame(drawFrame, now);
     }

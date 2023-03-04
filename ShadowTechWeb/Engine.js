@@ -333,9 +333,39 @@ class Mesh{
         vec.y = tof.y;
         vec.z = tof.z;
     }
-    constructor(geometry, normal, uv, fshader, vshader, engineh, albedo, specular, resx, resy, collision){
+    constructor(geometry, normal, uv, fshader, vshader, engineh, albedo, specular, normalmap, resx, resy, collision){
         this.collision = collision;
         this.vt = geometry;
+        this.tangent = new Float32Array(geometry.length);
+        for(var a = 0, i = 0, v = 0; a !== this.vt.length; a+=9, i+=9, v+=6){
+            var v0 = new vec3(geometry[a], geometry[a+1], geometry[a+2]);
+            var v1 = new vec3(geometry[a+3], geometry[a+4], geometry[a+5]);
+            var v2 = new vec3(geometry[a+6], geometry[a+7], geometry[a+8]);
+
+            var uv0 = new vec2(uv[v], uv[v+1]+1.0);
+            var uv1 = new vec2(uv[v+2], uv[v+3]+1.0);
+            var uv2 = new vec2(uv[v+4], uv[v+5]+1.0);
+
+            var deltapos1 = new vec3(v1.x-v0.x, v1.y-v0.y, v1.z-v0.z);
+            var deltapos2 = new vec3(v2.x-v0.x, v2.y-v0.y, v2.z-v0.z);
+
+            var deltaUV1 = new vec3(uv1.x-uv0.x, uv1.y-uv0.y);
+            var deltaUV2 = new vec3(uv2.x-uv0.x, uv2.y-uv0.y);
+
+            var r = 1.0 / (deltaUV1.x * deltaUV2.y - deltaUV1.y * deltaUV2.x);
+
+            this.tangent[i] = (deltapos1.x * deltaUV2.y - deltapos2.x * deltaUV1.y)*r;
+            this.tangent[i+1] = (deltapos1.y * deltaUV2.y - deltapos2.y * deltaUV1.y)*r;
+            this.tangent[i+2] = (deltapos1.z * deltaUV2.y - deltapos2.z * deltaUV1.y)*r;
+
+            this.tangent[i+3] = (deltapos1.x * deltaUV2.y - deltapos2.x * deltaUV1.y)*r;
+            this.tangent[i+4] = (deltapos1.y * deltaUV2.y - deltapos2.y * deltaUV1.y)*r;
+            this.tangent[i+5] = (deltapos1.z * deltaUV2.y - deltapos2.z * deltaUV1.y)*r;
+
+            this.tangent[i+6] = (deltapos1.x * deltaUV2.y - deltapos2.x * deltaUV1.y)*r;
+            this.tangent[i+7] = (deltapos1.y * deltaUV2.y - deltapos2.y * deltaUV1.y)*r;
+            this.tangent[i+8] = (deltapos1.z * deltaUV2.y - deltapos2.z * deltaUV1.y)*r;
+        }
         this.vBuf = engineh.gl.createBuffer();
         engineh.gl.bindBuffer(engineh.gl.ARRAY_BUFFER, this.vBuf);
         engineh.gl.bufferData(engineh.gl.ARRAY_BUFFER, geometry, engineh.gl.STATIC_DRAW);
@@ -345,14 +375,18 @@ class Mesh{
         this.uBuf = engineh.gl.createBuffer();
         engineh.gl.bindBuffer(engineh.gl.ARRAY_BUFFER, this.uBuf);
         engineh.gl.bufferData(engineh.gl.ARRAY_BUFFER, uv, engineh.gl.STATIC_DRAW);
+        this.tBuf = engineh.gl.createBuffer();
+        engineh.gl.bindBuffer(engineh.gl.ARRAY_BUFFER, this.tBuf);
+        engineh.gl.bufferData(engineh.gl.ARRAY_BUFFER, this.tangent, engineh.gl.STATIC_DRAW);
         this.meshMat = new mat4();
         this.shaderprog = engineh.initShaderProgram(vshader, fshader);
 
         this.positionLoc = engineh.gl.getAttribLocation(this.shaderprog, "positions");
         this.normalLoc = engineh.gl.getAttribLocation(this.shaderprog, "normals");
         this.uvLoc = engineh.gl.getAttribLocation(this.shaderprog, "uv");
+        this.tangentLoc = engineh.gl.getAttribLocation(this.shaderprog, "ntangent");
 
-        console.log(this.positionLoc+" "+this.normalLoc+" "+this.uvLoc);
+        console.log(this.positionLoc+" "+this.normalLoc+" "+this.uvLoc+" "+this.tangentLoc);
         this.totalv = geometry.length/3;
         this.pos = new vec3(0.0, 0.0, 0.0);
         this.rot = new vec3(0.0, 0.0, 0.0);
@@ -367,6 +401,12 @@ class Mesh{
         this.spec = engineh.gl.createTexture();
         engineh.gl.bindTexture(engineh.gl.TEXTURE_2D, this.spec);
         engineh.gl.texImage2D(engineh.gl.TEXTURE_2D, 0, engineh.gl.RGBA, resx, resy, 0, engineh.gl.RGBA, engineh.gl.UNSIGNED_BYTE, specular);
+        engineh.gl.texParameteri(engineh.gl.TEXTURE_2D, engineh.gl.TEXTURE_MIN_FILTER, engineh.gl.LINEAR);
+        engineh.gl.texParameteri(engineh.gl.TEXTURE_2D, engineh.gl.TEXTURE_WRAP_S, engineh.gl.MIRRORED_REPEAT);
+        engineh.gl.texParameteri(engineh.gl.TEXTURE_2D, engineh.gl.TEXTURE_WRAP_T, engineh.gl.MIRRORED_REPEAT);
+        this.norm = engineh.gl.createTexture();
+        engineh.gl.bindTexture(engineh.gl.TEXTURE_2D, this.norm);
+        engineh.gl.texImage2D(engineh.gl.TEXTURE_2D, 0, engineh.gl.RGBA, resx, resy, 0, engineh.gl.RGBA, engineh.gl.UNSIGNED_BYTE, normalmap);
         engineh.gl.texParameteri(engineh.gl.TEXTURE_2D, engineh.gl.TEXTURE_MIN_FILTER, engineh.gl.LINEAR);
         engineh.gl.texParameteri(engineh.gl.TEXTURE_2D, engineh.gl.TEXTURE_WRAP_S, engineh.gl.MIRRORED_REPEAT);
         engineh.gl.texParameteri(engineh.gl.TEXTURE_2D, engineh.gl.TEXTURE_WRAP_T, engineh.gl.MIRRORED_REPEAT);
@@ -407,9 +447,9 @@ class Mesh{
         }
     }
     Draw(engineh){
+        this.CalcAABB();
+        this.interacting = engineh.aabbPlayer(this.pos, this.aabb, this.collision);
         if(engineh.isshadowpass === false){
-            this.CalcAABB();
-            this.interacting = engineh.aabbPlayer(this.pos, this.aabb, this.collision);
             engineh.gl.useProgram(this.shaderprog);
 
             this.meshMat.clearmat();
@@ -481,6 +521,10 @@ class Mesh{
             engineh.gl.activeTexture(engineh.gl.TEXTURE2);
             engineh.gl.bindTexture(engineh.gl.TEXTURE_2D, engineh.shadowtex);
 
+            engineh.gl.uniform1i(engineh.gl.getUniformLocation(this.shaderprog, "normal"), 3);
+            engineh.gl.activeTexture(engineh.gl.TEXTURE3);
+            engineh.gl.bindTexture(engineh.gl.TEXTURE_2D, this.norm);
+
             engineh.gl.bindBuffer(engineh.gl.ARRAY_BUFFER, this.uBuf);
             engineh.gl.enableVertexAttribArray(this.uvLoc);
             engineh.gl.vertexAttribPointer(this.uvLoc, 2, engineh.gl.FLOAT, false, 0, 0);
@@ -492,6 +536,10 @@ class Mesh{
             engineh.gl.bindBuffer(engineh.gl.ARRAY_BUFFER, this.vBuf);
             engineh.gl.enableVertexAttribArray(this.positionLoc);
             engineh.gl.vertexAttribPointer(this.positionLoc, 3, engineh.gl.FLOAT, false, 0, 0);
+
+            engineh.gl.bindBuffer(engineh.gl.ARRAY_BUFFER, this.tBuf);
+            engineh.gl.enableVertexAttribArray(this.tangentLoc);
+            engineh.gl.vertexAttribPointer(this.tangentLoc, 3, engineh.gl.FLOAT, false, 0, 0);
 
             engineh.gl.drawArrays(engineh.gl.TRIANGLES, 0, this.totalv);
         }else if(engineh.isshadowpass === true){
