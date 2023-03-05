@@ -56,11 +56,13 @@ void main(){
         float spec = pow(max(dot(viewDir, reflectDir), 0.0), 32.0);
         vec3 specu = specularStrength * spec * lightc[i];  
 
-        float distance    = length(lightp[i] - posit);
-        float attenuation = 1.0 / (constant + linear * distance + quadratic * (distance * distance)); 
-        ambient  *= attenuation; 
-        diffuse  *= attenuation;
-        specu *= attenuation;     
+        if(lightt[i] == 0){
+            float distance = length(lightp[i] - posit);
+            float attenuation = 1.0 / (constant + linear * distance + quadratic * (distance * distance)); 
+            ambient  *= attenuation; 
+            diffuse  *= attenuation;
+            specu *= attenuation;     
+        }
 
         finalcolor += ((diffuse + specu)*(1.0-shadowMapping())+ambient) * texture(albedo, xy).rgb;
     }
@@ -137,7 +139,7 @@ function main(){
     eng.shadowpos.z = -1.0;
     eng.shadowpos.y = -2.7;
     eng.shadowrot.y = 0.7;
-    eng.setLight(0, new vec3(0, 2.7, 2), new vec3(1, 1, 1));
+    eng.setLight(0, new vec3(0, 1, 1), new vec3(1, 1, 1), 1);
     var mesh = new Mesh(susv, susn, susu, fshader, vshader, eng, tex, spec, norm, texx, texy, true);
     mesh.pos.y = 1;
     mesh.pos.z = -1.5;

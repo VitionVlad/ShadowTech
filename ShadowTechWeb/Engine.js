@@ -275,13 +275,14 @@ class Engine{
         }
         return toreturn;
     }
-    setLight(num, pos, color){
+    setLight(num, pos, color, type){
         this.lightposes[num*3] = pos.x;
         this.lightposes[num*3+1] = pos.y;
         this.lightposes[num*3+2] = pos.z;
         this.lightcolors[num*3] = color.x;
         this.lightcolors[num*3+1] = color.y;
         this.lightcolors[num*3+2] = color.z;
+        this.lighttypes[num] = type;
     }
     beginShadowPass(){
         this.isshadowpass = true;
