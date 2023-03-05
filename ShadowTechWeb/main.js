@@ -10,6 +10,7 @@ uniform sampler2D normal;
 uniform sampler2D shadow;
 uniform vec3 lightp[5];
 uniform vec3 lightc[5];
+uniform int lightt[5];
 uniform vec3 ppos;
 in vec3 posit;
 in mat3 tbn;
@@ -40,8 +41,12 @@ void main(){
     for(int i = 0; i!=5; i++){
         float ambientStrength = 0.2;
         vec3 ambient = ambientStrength * lightc[i];
-
-        vec3 lightDir = tbn * normalize(lightp[i] - posit);
+        vec3 lightDir;
+        if(lightt[i] == 0){
+            lightDir = tbn * normalize(lightp[i] - posit);
+        }else{
+            lightDir = tbn * normalize(lightp[i]);
+        }
         float diff = max(dot(normal, lightDir), 0.0);
         vec3 diffuse = diff * lightc[i];
 
@@ -105,7 +110,6 @@ void main(){
     xy = uv;
     norm = normals;
     posit = positions;
-    vec3 tan = vec3(normals.z, normals.x, normals.y);
     mat3 vTBN = transpose(mat3(
         normalize(ntangent),
         normalize(cross(normals, ntangent)),
@@ -122,15 +126,18 @@ function main(){
     const speed = 0.0001;
     const sensivity = 500;
     var eng = new Engine();
+    eng.useorthosh = true;
+    eng.sfov = 15;
+    eng.sfar = 6.0;
     //eng.playerphysics = false;
     eng.pos.z = -1.0;
     eng.pos.y = -2.7;
     eng.rot.x = 0.0;
     eng.rot.y = 0.0;
-    eng.sfov = 110;
     eng.shadowpos.z = -1.0;
-    eng.shadowpos.y = -1.7;
-    eng.setLight(0, new vec3(0, 3.7, 2), new vec3(1, 1, 1));
+    eng.shadowpos.y = -2.7;
+    eng.shadowrot.y = 0.7;
+    eng.setLight(0, new vec3(0, 2.7, 2), new vec3(1, 1, 1));
     var mesh = new Mesh(susv, susn, susu, fshader, vshader, eng, tex, spec, norm, texx, texy, true);
     mesh.pos.y = 1;
     mesh.pos.z = -1.5;

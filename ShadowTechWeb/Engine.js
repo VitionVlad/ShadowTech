@@ -64,12 +64,12 @@ class mat4{
     }
     buildorthomat(r, l, t, b, zNear, zFar){
         this.mat[0] = 2/(r-l);
-        this.mat[5] = 2/(r-l);
+        this.mat[5] = 2/(t-b);
         this.mat[10] = -2/(zFar-zNear);
         this.mat[15] = 1;
-        this.mat[3] = (r+r)/(r-l);
-        this.mat[7] = (t+b)/(t-b);
-        this.mat[11] = (zFar+zNear)/(zFar-zNear);
+        this.mat[12] = -(r+l)/(r-l);
+        this.mat[13] = -(t+b)/(t-b);
+        this.mat[14] = -(zFar+zNear)/(zFar-zNear);
     }
     buildIdentityMat(){
         this.mat[0] = 1;
@@ -213,6 +213,8 @@ class Engine{
         this.shadowpos = new vec3(0, 0, 0);
         this.shadowrot = new vec2(0, 0);
         this.sfov = 90;
+        this.snear = 0.1;
+        this.sfar = 100.0;
         this.isshadowpass = false;
         this.shadowprog = this.initShaderProgram(this.vsShadow, this.fsShadow);
         this.positionLoc = this.gl.getAttribLocation(this.shadowprog, "positions");
@@ -229,6 +231,7 @@ class Engine{
         this.gl.renderbufferStorage(this.gl.RENDERBUFFER, this.gl.DEPTH_COMPONENT32F, this.shadowmapresolution, this.shadowmapresolution);
         this.gl.framebufferTexture2D(this.gl.FRAMEBUFFER, this.gl.COLOR_ATTACHMENT0, this.gl.TEXTURE_2D, this.shadowtex, 0)
         this.gl.framebufferRenderbuffer(this.gl.FRAMEBUFFER, this.gl.DEPTH_ATTACHMENT, this.gl.RENDERBUFFER, this.depthBuffers);
+        this.useorthosh = false;
 
         this.lightposes = new Float32Array([
             0, 0, 0,
@@ -243,6 +246,13 @@ class Engine{
             0, 0, 0,
             0, 0, 0,
             0, 0, 0,
+        ]);
+        this.lighttypes = new Int32Array([
+            0,
+            0,
+            0,
+            0,
+            0
         ]);
         this.then = 0;
         this.fps = 0;
@@ -453,7 +463,11 @@ class Mesh{
             engineh.gl.useProgram(this.shaderprog);
 
             this.meshMat.clearmat();
-            this.meshMat.buildperspectivemat(engineh.sfov, 0.1, 100.0, 1);
+            if(engineh.useorthosh === false){
+                this.meshMat.buildperspectivemat(engineh.sfov, engineh.snear, engineh.sfar, 1);
+            }else{
+                this.meshMat.buildorthomat(engineh.sfov, -engineh.sfov, engineh.sfov, -engineh.sfov, engineh.snear, engineh.sfar);
+            }
             engineh.gl.uniformMatrix4fv(engineh.gl.getUniformLocation(this.shaderprog, "sproj"), false, this.meshMat.mat);
 
             this.meshMat.clearmat();
@@ -506,6 +520,8 @@ class Mesh{
 
             engineh.gl.uniform3fv(engineh.gl.getUniformLocation(this.shaderprog, "lightp"), engineh.lightposes);
             engineh.gl.uniform3fv(engineh.gl.getUniformLocation(this.shaderprog, "lightc"), engineh.lightcolors);
+            engineh.gl.uniform1iv(engineh.gl.getUniformLocation(this.shaderprog, "lightt"), engineh.lighttypes);
+            engineh.gl.uniform2f(engineh.gl.getUniformLocation(this.shaderprog, "resolution"), engineh.gl.canvas.width, engineh.gl.canvas.height);
 
             engineh.gl.uniform3f(engineh.gl.getUniformLocation(this.shaderprog, "ppos"), engineh.pos.x, engineh.pos.y, engineh.pos.z);
 
@@ -546,7 +562,11 @@ class Mesh{
             engineh.gl.useProgram(engineh.shadowprog);
 
             this.meshMat.clearmat();
-            this.meshMat.buildperspectivemat(engineh.sfov, 0.1, 100.0, 1);
+            if(engineh.useorthosh === false){
+                this.meshMat.buildperspectivemat(engineh.sfov, engineh.snear, engineh.sfar, 1);
+            }else{
+                this.meshMat.buildorthomat(engineh.sfov, -engineh.sfov, engineh.sfov, -engineh.sfov, engineh.snear, engineh.sfar);
+            }
             engineh.gl.uniformMatrix4fv(engineh.gl.getUniformLocation(engineh.shadowprog, "proj"), false, this.meshMat.mat);
 
             this.meshMat.clearmat();
@@ -580,6 +600,8 @@ class Mesh{
             this.meshMat.clearmat();
             this.meshMat.buildScaleMat(this.scale);
             engineh.gl.uniformMatrix4fv(engineh.gl.getUniformLocation(engineh.shadowprog, "mscale"), false, this.meshMat.mat);
+
+            engineh.gl.uniform2f(engineh.gl.getUniformLocation(this.shaderprog, "resolution"), engineh.gl.canvas.width, engineh.gl.canvas.height);
 
             engineh.gl.bindBuffer(engineh.gl.ARRAY_BUFFER, this.vBuf);
             engineh.gl.enableVertexAttribArray(engineh.positionLoc);
