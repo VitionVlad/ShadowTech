@@ -14,6 +14,7 @@ uniform int lightt[5];
 uniform vec3 ppos;
 in vec3 posit;
 in mat3 tbn;
+uniform samplerCube cubemap;
 
 const float constant = 1.0;
 const float linear = 0.09;
@@ -66,7 +67,9 @@ void main(){
 
         finalcolor += ((diffuse + specu)*(1.0-shadowMapping())+ambient) * texture(albedo, xy).rgb;
     }
-    color = vec4(finalcolor, 1);
+    vec3 I = normalize(posit - -ppos);
+    vec3 R = reflect(I, normalize(tbn*normal));
+    color = vec4(mix(finalcolor, texture(cubemap, R).gbr, texture(specular, xy).r/2.0), 1);
 }
 `;
 
