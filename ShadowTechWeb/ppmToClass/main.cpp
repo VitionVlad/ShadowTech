@@ -14,16 +14,29 @@ void readImage(vector<int>& pixels, const char* path){
     fstream readimage;
     readimage.open(path);
     int i1, i2, i3;
+    char c[3];
     string trash;
     readimage >> trash;
     readimage >> resolutionx >> resolutiony;
     readimage >> i1;
     pixels.resize(resolutionx*resolutiony*4);
-    for(int i = 0; readimage >> i1 >> i2 >> i3; i+=4){
-        pixels[i] = i1;
-        pixels[i+1] = i2;
-        pixels[i+2] = i3;
-        pixels[i+3] = 255;
+    if(trash == "P3"){
+        for(int i = 0; readimage >> i1 >> i2 >> i3; i+=4){
+            pixels[i] = i1;
+            pixels[i+1] = i2;
+            pixels[i+2] = i3;
+            pixels[i+3] = 255;
+        }  
+    }else{
+        for(int i = 0; i!=resolutionx*resolutiony*4; i+=4){
+            readimage.get(c[0]);
+            readimage.get(c[1]);
+            readimage.get(c[2]);
+            pixels[i] = (unsigned char) c[0];
+            pixels[i+1] = (unsigned char) c[1];
+            pixels[i+2] = (unsigned char) c[2];
+            pixels[i+3] = 255;
+        }
     }
     readimage.close();
 }
