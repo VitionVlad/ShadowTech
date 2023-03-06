@@ -90,12 +90,6 @@ class mat4{
     }
 }
 
-class cubeMap{
-    constructor(face1, face2, face3, face4, face5, face6){
-
-    }
-}
-
 class Engine{
     between(x, min, max) {
         return x >= min && x <= max;
@@ -295,8 +289,7 @@ class Engine{
         this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, this.shadowfr);
         this.gl.viewport(0, 0, this.shadowmapresolution, this.shadowmapresolution);
         this.gl.clearColor(1.0, 1.0, 1.0, 1.0);
-        this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
-        this.gl.cullFace(this.gl.FRONT); 
+        this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT); 
     }
     beginFrame(){
         this.isshadowpass = false;
@@ -304,7 +297,6 @@ class Engine{
         this.gl.viewport(0, 0, this.gl.canvas.width, this.gl.canvas.height);
         this.gl.clearColor(0.0, 0.0, 0.0, 1.0);
         this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
-        this.gl.cullFace(this.gl.BACK); 
         if(this.playerphysics === true){
             this.pos.y += this.playerforce;
         }
@@ -336,6 +328,24 @@ class Engine{
     }
 }
 
+class cubeMap{
+    constructor(right, left, top, bottom, back, front, resx, resy, engineh){
+        this.texture = engineh.gl.createTexture();
+        engineh.gl.bindTexture(engineh.gl.TEXTURE_CUBE_MAP, this.texture);
+        engineh.gl.texImage2D(engineh.gl.TEXTURE_CUBE_MAP_POSITIVE_X, 0, engineh.gl.RGBA, resx, resy, 0, engineh.gl.RGBA, engineh.gl.UNSIGNED_BYTE, right);
+        engineh.gl.texImage2D(engineh.gl.TEXTURE_CUBE_MAP_NEGATIVE_X, 0, engineh.gl.RGBA, resx, resy, 0, engineh.gl.RGBA, engineh.gl.UNSIGNED_BYTE, left);
+        engineh.gl.texImage2D(engineh.gl.TEXTURE_CUBE_MAP_POSITIVE_Y, 0, engineh.gl.RGBA, resx, resy, 0, engineh.gl.RGBA, engineh.gl.UNSIGNED_BYTE, top);
+        engineh.gl.texImage2D(engineh.gl.TEXTURE_CUBE_MAP_NEGATIVE_Y, 0, engineh.gl.RGBA, resx, resy, 0, engineh.gl.RGBA, engineh.gl.UNSIGNED_BYTE, bottom);
+        engineh.gl.texImage2D(engineh.gl.TEXTURE_CUBE_MAP_NEGATIVE_Z, 0, engineh.gl.RGBA, resx, resy, 0, engineh.gl.RGBA, engineh.gl.UNSIGNED_BYTE, back);
+        engineh.gl.texImage2D(engineh.gl.TEXTURE_CUBE_MAP_POSITIVE_Z, 0, engineh.gl.RGBA, resx, resy, 0, engineh.gl.RGBA, engineh.gl.UNSIGNED_BYTE, front);
+        engineh.gl.texParameteri(engineh.gl.TEXTURE_CUBE_MAP, engineh.gl.TEXTURE_MAG_FILTER, engineh.gl.LINEAR);
+        engineh.gl.texParameteri(engineh.gl.TEXTURE_CUBE_MAP, engineh.gl.TEXTURE_MIN_FILTER, engineh.gl.LINEAR);
+        engineh.gl.texParameteri(engineh.gl.TEXTURE_CUBE_MAP, engineh.gl.TEXTURE_WRAP_S, engineh.gl.CLAMP_TO_EDGE);
+        engineh.gl.texParameteri(engineh.gl.TEXTURE_CUBE_MAP, engineh.gl.TEXTURE_WRAP_T, engineh.gl.CLAMP_TO_EDGE);
+        engineh.gl.texParameteri(engineh.gl.TEXTURE_CUBE_MAP, engineh.gl.TEXTURE_WRAP_R, engineh.gl.CLAMP_TO_EDGE);
+    }
+}
+
 class Mesh{
     vecmatmult(vec, mat){
         var tof = new vec3(0.0, 0.0, 0.0);
@@ -350,7 +360,10 @@ class Mesh{
         vec.y = tof.y;
         vec.z = tof.z;
     }
-    constructor(geometry, normal, uv, fshader, vshader, engineh, albedo, specular, normalmap, resx, resy, collision){
+    constructor(geometry, normal, uv, fshader, vshader, engineh, albedo, specular, normalmap, resx, resy, collision, cubemap){
+        this.shadowcullmode = engineh.gl.FRONT;
+        this.cullmode = engineh.gl.BACK;
+        this.cubemap = cubemap;
         this.collision = collision;
         this.vt = geometry;
         this.tangent = new Float32Array(geometry.length);
@@ -467,6 +480,7 @@ class Mesh{
         this.CalcAABB();
         this.interacting = engineh.aabbPlayer(this.pos, this.aabb, this.collision);
         if(engineh.isshadowpass === false){
+            engineh.gl.cullFace(this.cullmode);
             engineh.gl.useProgram(this.shaderprog);
 
             this.meshMat.clearmat();
@@ -548,6 +562,12 @@ class Mesh{
             engineh.gl.activeTexture(engineh.gl.TEXTURE3);
             engineh.gl.bindTexture(engineh.gl.TEXTURE_2D, this.norm);
 
+            if(this.cubemap.texture !== null){
+                engineh.gl.uniform1i(engineh.gl.getUniformLocation(this.shaderprog, "cubemap"), 4);
+                engineh.gl.activeTexture(engineh.gl.TEXTURE4);
+                engineh.gl.bindTexture(engineh.gl.TEXTURE_CUBE_MAP, this.cubemap.texture);
+            }
+
             engineh.gl.bindBuffer(engineh.gl.ARRAY_BUFFER, this.uBuf);
             engineh.gl.enableVertexAttribArray(this.uvLoc);
             engineh.gl.vertexAttribPointer(this.uvLoc, 2, engineh.gl.FLOAT, false, 0, 0);
@@ -566,6 +586,7 @@ class Mesh{
 
             engineh.gl.drawArrays(engineh.gl.TRIANGLES, 0, this.totalv);
         }else if(engineh.isshadowpass === true){
+            engineh.gl.cullFace(this.shadowcullmode);
             engineh.gl.useProgram(engineh.shadowprog);
 
             this.meshMat.clearmat();

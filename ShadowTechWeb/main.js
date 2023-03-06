@@ -121,6 +121,60 @@ void main(){
 }
 `;
 
+const sfshader = `#version 300 es
+precision mediump float;
+layout (location = 0) out vec4 color;
+in vec2 xy;
+in vec3 norm;
+in float dep;
+uniform sampler2D albedo;
+uniform sampler2D specular;
+uniform sampler2D normal;
+uniform sampler2D shadow;
+uniform samplerCube cubemap;
+uniform vec3 lightp[5];
+uniform vec3 lightc[5];
+uniform int lightt[5];
+uniform vec3 ppos;
+in vec3 posit;
+
+void main(){
+    color = vec4(texture(cubemap, posit).gbr, 1);
+}
+`;
+
+const svshader = `#version 300 es
+
+in vec3 positions;
+in vec3 normals;
+in vec2 uv;
+in vec3 ntangent;
+
+uniform mat4 proj;
+uniform mat4 trans;
+uniform mat4 rotx;
+uniform mat4 roty;
+
+uniform mat4 mtrans;
+uniform mat4 mrotx;
+uniform mat4 mroty;
+uniform mat4 mrotz;
+uniform mat4 mscale;
+
+out vec2 xy;
+out vec3 norm;
+out vec3 posit;
+void main(){
+    vec4 fin = mscale * vec4(positions, 1.0);
+    fin = mtrans * mroty * mrotx * mrotz * fin;
+    fin = proj * roty * rotx * trans * fin;
+    gl_Position = fin;
+    xy = uv;
+    norm = normals;
+    posit = positions;
+}
+`;
+
 var locked = false;
 
 function main(){
@@ -140,10 +194,14 @@ function main(){
     eng.shadowpos.y = -2.7;
     eng.shadowrot.y = 0.7;
     eng.setLight(0, new vec3(0, 1, 1), new vec3(1, 1, 1), 1);
-    var mesh = new Mesh(susv, susn, susu, fshader, vshader, eng, tex, spec, norm, texx, texy, true);
+    var cubem = new cubeMap(right, left, ttop, bottom, back, front, 200, 200, eng);
+    var mesh = new Mesh(susv, susn, susu, fshader, vshader, eng, tex, spec, norm, texx, texy, true, cubem);
     mesh.pos.y = 1;
     mesh.pos.z = -1.5;
-    var mesh2 = new Mesh(planev, planen, planeu, fshader, vshader, eng, tex, spec, norm, texx, texy, true);
+    var mesh2 = new Mesh(planev, planen, planeu, fshader, vshader, eng, tex, spec, norm, texx, texy, true, cubem);
+    var mesh3 = new Mesh(skyv, skyn, skyu, sfshader, svshader, eng, null, null, null, 1, 1, false, cubem);
+    mesh3.cullmode = eng.gl.FRONT;
+    mesh3.rot.y = 3.0;
     function key_callback(){
         document.addEventListener('keydown', function(event) {
             if (event.key == "w") {
@@ -191,6 +249,7 @@ function main(){
         mousecallback();
         key_callback();
 
+        mesh3.Draw(eng);
         mesh.Draw(eng);
         mesh2.Draw(eng);
 
