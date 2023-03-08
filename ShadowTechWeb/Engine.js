@@ -215,13 +215,6 @@ class Engine{
         this.positionLoc = this.gl.getAttribLocation(this.shadowprog, "positions");
         this.shadowfr = this.gl.createFramebuffer();
         this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, this.shadowfr);
-        //this.shadowtex = this.gl.createTexture();
-        //this.gl.bindTexture(this.gl.TEXTURE_2D, this.shadowtex);
-        //this.gl.texImage2D(this.gl.TEXTURE_2D, 0, this.gl.RGBA, this.shadowmapresolution, this.shadowmapresolution, 0, this.gl.RGBA, this.gl.UNSIGNED_BYTE, null);
-        //this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_MIN_FILTER, this.gl.NEAREST);
-        //this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_MAG_FILTER, this.gl.NEAREST);
-        //this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_WRAP_S, this.gl.CLAMP_TO_EDGE);
-        //this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_WRAP_T, this.gl.CLAMP_TO_EDGE);
         this.shadowtex = this.gl.createTexture();
         this.gl.bindTexture(this.gl.TEXTURE_2D, this.shadowtex);
         this.gl.texImage2D(this.gl.TEXTURE_2D, 0, this.gl.DEPTH_COMPONENT32F, this.shadowmapresolution, this.shadowmapresolution, 0, this.gl.DEPTH_COMPONENT, this.gl.FLOAT, null);
@@ -229,7 +222,6 @@ class Engine{
         this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_MAG_FILTER, this.gl.NEAREST);
         this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_WRAP_S, this.gl.CLAMP_TO_EDGE);
         this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_WRAP_T, this.gl.CLAMP_TO_EDGE);
-        //this.gl.framebufferTexture2D(this.gl.FRAMEBUFFER, this.gl.COLOR_ATTACHMENT0, this.gl.TEXTURE_2D, this.shadowtex, 0)
         this.gl.framebufferTexture2D(this.gl.FRAMEBUFFER, this.gl.DEPTH_ATTACHMENT, this.gl.TEXTURE_2D, this.shadowtex, 0);
         this.useorthosh = false;
 
@@ -258,6 +250,7 @@ class Engine{
         this.fps = 0;
         this.playerphysics = true;
         this.playerforce = 0.01;
+        this.framecounter = 0;
     }
     aabbPlayer(meshPos, meshBorder, enableColision){
         var toreturn  = false;
@@ -327,6 +320,7 @@ class Engine{
         const delta =  now - this.then;
         this.then = now;
         this.fps = 1 / delta;
+        this.framecounter += 1;
         requestAnimationFrame(framefunc);
     }
 }
@@ -446,6 +440,8 @@ class Mesh{
         engineh.gl.bindTexture(engineh.gl.TEXTURE_2D, null);
         this.aabb = new vec3(0.0, 0.0, 0.0);
         this.interacting = false;
+        this.normalrendermode = engineh.gl.TRIANGLES;
+        this.shadowrendermode = engineh.gl.TRIANGLES;
     }
     CalcAABB(){
         this.aabb.x = 0;
@@ -565,7 +561,7 @@ class Mesh{
             engineh.gl.activeTexture(engineh.gl.TEXTURE3);
             engineh.gl.bindTexture(engineh.gl.TEXTURE_2D, this.norm);
 
-            if(this.cubemap.texture !== null){
+            if(this.cubemap != null){
                 engineh.gl.uniform1i(engineh.gl.getUniformLocation(this.shaderprog, "cubemap"), 4);
                 engineh.gl.activeTexture(engineh.gl.TEXTURE4);
                 engineh.gl.bindTexture(engineh.gl.TEXTURE_CUBE_MAP, this.cubemap.texture);
@@ -587,7 +583,7 @@ class Mesh{
             engineh.gl.enableVertexAttribArray(this.tangentLoc);
             engineh.gl.vertexAttribPointer(this.tangentLoc, 3, engineh.gl.FLOAT, false, 0, 0);
 
-            engineh.gl.drawArrays(engineh.gl.TRIANGLES, 0, this.totalv);
+            engineh.gl.drawArrays(this.normalrendermode, 0, this.totalv);
         }else if(engineh.isshadowpass === true){
             engineh.gl.cullFace(this.shadowcullmode);
             engineh.gl.useProgram(engineh.shadowprog);
@@ -638,7 +634,7 @@ class Mesh{
             engineh.gl.enableVertexAttribArray(engineh.positionLoc);
             engineh.gl.vertexAttribPointer(engineh.positionLoc, 3, engineh.gl.FLOAT, false, 0, 0);
 
-            engineh.gl.drawArrays(engineh.gl.TRIANGLES, 0, this.totalv);
+            engineh.gl.drawArrays(this.shadowrendermode, 0, this.totalv);
         }
     }
 }
